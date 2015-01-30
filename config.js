@@ -11,7 +11,16 @@ config = {
     // Configure your URL and mail settings here
     production: {
         url: process.env.BLOG_URL,
-        mail: {},
+		mail: {
+			transport: 'SMTP',
+			options: {
+				service: 'Mailgun',
+				auth: {
+					user: process.env.EMAIL_USERNAME, // mailgun username
+					pass: process.env.EMAIL_PASSWORD  // mailgun password
+				}
+			}
+		},
         database: {
             client: 'postgres',
             connection: {
@@ -28,7 +37,8 @@ config = {
             host: '0.0.0.0',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: process.env.PORT
-        }
+        },
+        fileStorage: false
     },
 
     // ### Development **(default)**
