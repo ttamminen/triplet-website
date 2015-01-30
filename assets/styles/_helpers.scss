@@ -1,0 +1,31 @@
+%group {
+	zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+
+	&:before, &:after {
+	    content: "";
+	    display: table;
+	}
+
+	&:after {
+		clear: both;
+	}
+}
+
+%plain-list {
+	list-style: none;
+	padding-left: 0;
+}
+
+.u-centered-text {
+	text-align: center;
+}
+
+%centered-content {	
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.u-centered-content {
+	@extend %centered-content;
+}

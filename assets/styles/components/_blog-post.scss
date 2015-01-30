@@ -1,0 +1,58 @@
+%horizontal-rule {
+	border-bottom: 1px solid #d7d7d7;
+}
+
+.blog-post {
+	
+}
+
+.blog-post-info-header {
+	padding-bottom: 0.5em;
+	@extend %horizontal-rule;
+}
+
+.blog-post-content {
+	@extend %centered-content;
+	max-width: $content-max-width;
+	padding: 2em 6em;
+}
+
+.blog-post-caption {
+	@include zeta;
+	@include rem(margin-bottom, $zeta-font-size * 1.5);
+	font-weight: 200;
+}
+
+.blog-post-body {
+	padding-bottom: 5em;
+	margin-bottom: 1em;
+	@extend %horizontal-rule;
+	float: left;
+}
+
+.blog-post-body .blog-post-caption {
+	@include rem(margin-bottom, $zeta-font-size);
+}
+
+.blog-post-body p:last-child {
+	margin-bottom: 0;
+}
+
+.blog-post-share {
+	clear: both;
+}
+
+.blog-post-share-caption {
+	@include eta;
+	font-weight: 200;
+}
+
+.blog-post-left-floated-content-image {
+	margin-right: 2em;
+	float: left;
+}
+
+.blog-post-right-floated-content-image {
+	margin-left: 2em;
+	float: right;
+}

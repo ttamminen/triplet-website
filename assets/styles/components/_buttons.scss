@@ -1,0 +1,29 @@
+$button-border-color: $t3-green;
+$button-text-color: $t3-green;
+$button-background-color: $t3-white;
+$button-hover-text-color: $t3-white;
+$button-hover-background-color: $t3-green;
+
+.button {
+	background-color: $button-background-color;
+	font-weight: 400;
+	text-decoration: none;
+	color: $button-text-color;
+	border: 3px solid $button-border-color;
+	padding: 0.5em 1em;
+	display: inline-block;
+	transition: background-color 0.4s ease;	
+
+	&:visited {
+		color: $button-text-color;
+	}
+
+	&:hover, &:active {
+		background-color: $button-hover-background-color;
+		color: $button-hover-text-color;
+	}
+
+	&:focus {
+		outline: 0;
+	}
+}

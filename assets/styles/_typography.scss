@@ -1,0 +1,157 @@
+/**
+	Examples of font size usages:
+
+	Alpha      - Main Titles
+	Beta       - Big text highlight
+	Gamma      - Blog categories
+	Delta      - Text highlight
+	Epsilon    - Widget caption
+	Zeta       - CV titles
+	Eta        - Form fields, buttons, CV information
+*/
+
+/* text colors */
+$body-text-color: $t3-abbey;
+$main-title-color: $t3-white;
+$big-text-highlight-color: $t3-white;
+$blog-category-text-color: $t3-green;
+
+/* sizes */
+$body-font-size: 1rem; // 16px
+$alpha-font-size: 2.625rem; // 42px
+$beta-font-size: 2.25rem; // 36px
+$gamma-font-size: 1.875rem; // 30px
+$delta-font-size: 1.75rem; // 28px
+$epsilon-font-size: 1.625rem; // 26px
+$zeta-font-size: 1.375rem; // 22px
+$eta-font-size: 1.125rem; // 18px
+
+$line-height-multiplier: 1.5;
+
+@font-face {
+	font-family: 'DIN Next';
+	src: url('/fonts/eot/DINNextLTPro-Regular.eot');
+	src: url('/fonts/eot/DINNextLTPro-Regular.eot?#iefix') format('embedded-opentype'),
+	     url('/fonts/woff/DINNextLTPro-Regular.woff') format('woff'),
+	     url('/fonts/ttf/DINNextLTPro-Regular.ttf')  format('truetype');
+	font-style: normal;
+	font-weight: 400;
+}
+
+@font-face {
+    font-family: 'DIN Next';
+    src: url('/fonts/eot/DINNextLTPro-Light.eot');
+    src: url('/fonts/eot/DINNextLTPro-Light.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/woff/DINNextLTPro-Light.woff') format('woff'),
+         url('/fonts/ttf/DINNextLTPro-Light.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 200;
+}
+
+body {
+	font-family: 'DIN Next', arial;
+	font-weight: 200;
+	font-size: 1em;
+	line-height: 1.5rem;
+}
+
+h1,h2,h3,h4,h5,h6,hgroup,
+ul,ol,dd,
+p,figure,
+pre,table,fieldset,hr,code {
+	margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+@mixin alpha {
+	@include rem(font-size, $alpha-font-size);
+	@include rem(line-height, $alpha-font-size * $line-height-multiplier);
+}
+
+.alpha {
+	@include alpha;
+}
+
+@mixin beta {
+	@include rem(font-size, $beta-font-size);	
+	@include rem(line-height, $beta-font-size * $line-height-multiplier);
+}
+
+.beta {
+	@include beta;
+}
+
+@mixin gamma {
+	@include rem(font-size, $gamma-font-size);
+	@include rem(line-height, $gamma-font-size * $line-height-multiplier);
+}
+
+.gamma {
+	@include gamma;
+}
+
+@mixin delta {
+	@include rem(font-size, $delta-font-size);
+	@include rem(line-height, $delta-font-size * $line-height-multiplier);
+}
+
+.delta {
+	@include delta;
+}
+
+@mixin epsilon {
+	@include rem(font-size, $epsilon-font-size);
+	@include rem(line-height, $epsilon-font-size * $line-height-multiplier);
+}
+
+.epsilon {
+	@include epsilon;
+}
+
+@mixin zeta {
+	@include rem(font-size, $zeta-font-size);
+	@include rem(line-height, $zeta-font-size * $line-height-multiplier);
+}
+
+.zeta {
+	@include zeta;
+}
+
+@mixin eta {
+	@include rem(font-size, $eta-font-size);
+	@include rem(line-height, $eta-font-size * $line-height-multiplier);
+}
+
+.eta {
+	@include eta;
+}
+
+.highlight-heading {
+	@include epsilon;
+	font-weight: 400;
+	line-height: 1.5;
+}
+
+.text-highlight-heading {
+	@include delta;
+	font-weight: 200;
+}
+
+.highlight-subheading {
+	@include zeta;
+	font-weight: 200;
+}
+
+.group-title {
+	@include alpha;
+	font-weight: 200;
+}
+
+.tag-selector-item {
+	@include zeta;
+	font-weight: 200;
+
+	@media screen and (min-width: 30em) {
+		@include gamma;
+	}	
+}

@@ -1,0 +1,69 @@
+%widget {
+	min-width: 200px;	
+	display: inline-block;
+	box-shadow: 0 9px 15px rgba(30, 30, 30, 0.5);
+	@include rem(margin-bottom, 1.5em);
+}
+
+.article-highlight {
+	@extend %widget;
+	background-color: $t3-white;
+}
+
+.article-highlight-image {
+	vertical-align: baseline;
+}
+
+.highlight-heading, .text-highlight-heading {
+	@include rem(margin-bottom, 2.625rem);
+}
+
+.highlight-subheading {
+	color: $t3-green;
+	display: block;
+}
+
+.highlight-content {	
+	text-align: center;
+	@include rem(margin-left, 1.5em);
+	@include rem(margin-right, 1.5em);
+	@include rem(padding-top, 2.625em);
+}
+
+.highlight-action-link {
+	@include rem(margin-bottom, 1.5em);	
+}
+
+.text-highlight {
+	@extend %widget;
+	background-color: $t3-white;
+}
+
+.call-to-action {
+	@extend %widget;
+	background-color: $t3-green;
+	text-align: center;
+
+	&:before {
+		content: '';
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+		margin-right: -0.25em; /* Adjusts for spacing */
+	}
+}
+
+.call-to-action-header {
+	@include rem(font-size, $alpha-font-size);
+	margin-bottom: 0;
+	font-weight: 200;
+	border-bottom: 2px solid $t3-white;
+	@include rem(padding-bottom, 0.8rem); 
+	display: inline-block;
+	vertical-align: middle;
+
+	a, a:visited {
+		color: $t3-white;
+		text-decoration: none;
+	}	
+}

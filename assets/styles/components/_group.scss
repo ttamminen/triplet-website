@@ -1,0 +1,9 @@
+.group {
+	text-align: center;
+	@include rem(padding-top, $alpha-font-size * 1.5);
+}
+
+.group-title {
+	@include rem(margin-bottom, $alpha-font-size * 1.5);
+	color: $t3-white;	
+}

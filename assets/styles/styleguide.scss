@@ -1,0 +1,67 @@
+@import "variables";
+
+.styleguide-colors {
+	list-style: none;
+	padding-left: 0;
+	display: block;
+
+	li {
+		display: inline-block;
+		width: 20%;
+		padding: 1em;		
+	}
+
+	div {
+		height: 40px;
+	}
+}
+
+.green {
+	background-color: $t3-green;
+}
+
+.abbey {
+	background-color: $t3-abbey;
+}
+
+.white {
+	background-color: $t3-white;
+}
+
+.gallery {
+	background-color: $t3-gallery;	
+}
+
+.silverchalice {
+	background-color: $t3-silverchalice;
+}
+
+.spunpearl {
+	background-color: $t3-spunpearl;
+}
+
+.fiord {
+	background-color: $t3-fiord;
+}
+
+.article-highlight, .text-highlight {
+	width: 306px;
+	margin-left: 13px;
+	margin-right: 13px;
+}
+
+.call-to-action, .article-highlight.large {
+	width: 472px;	
+}
+
+.call-to-action {
+	height: 375px;
+}
+
+.highlights {
+	background-color: $t3-abbey;	
+}
+
+.group {
+	background-color: $t3-abbey;
+}

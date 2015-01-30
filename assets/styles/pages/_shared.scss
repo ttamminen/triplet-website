@@ -1,0 +1,12 @@
+.u-content {
+	> header {
+		@extend %centered-content;
+		max-width: $max-width;
+	}
+
+	> div, > section {
+		@extend %centered-content;		
+		max-width: $content-max-width;		
+		padding: 0 $content-padding;
+	}
+}
