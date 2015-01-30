@@ -10,7 +10,7 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
-        url: 'http://www.triplet.fi/blog',
+        url: 'https://triplet.herokuapp.com/blog',
         mail: {},
         database: {
             client: 'postgres',
