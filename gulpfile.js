@@ -137,7 +137,7 @@ gulp.task('server', function (next) {
         });
 });
 
-gulp.task('ghost', function () {
+gulp.task('ghost', ['createtheme'], function () {
 	nodemon({ 
 		script: 'index.js', 
 		ext: 'scss js', 
