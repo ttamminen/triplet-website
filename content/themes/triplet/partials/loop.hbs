@@ -5,19 +5,16 @@
 
 {{! This is the post loop - each post will be output using this markup }}
 {{#foreach posts}}
-<article class="{{post_class}}">
-    <header class="post-header">
-        <h2 class="post-title"><a href="{{url}}">{{{title}}}</a></h2>
-    </header>
-    <section class="post-excerpt">
-        <p>{{excerpt words="26"}} <a class="read-more" href="{{url}}">&raquo;</a></p>
-    </section>
-    <footer class="post-meta">
-        {{#if author.image}}<img class="author-thumb" src="{{author.image}}" alt="Author image" nopin="nopin" />{{/if}}
-        {{author}}
-        {{tags prefix=" on "}}
-        <time class="post-date" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time>
-    </footer>
+<article class="article-highlight {{post_class}}">
+    <a href="{{url}}">
+        <div class="article-highlight-image-crop">
+            <img class="article-highlight-image" src="{{image}}" alt="Mock-image">
+        </div>
+        <div class="highlight-content">
+            <h1 class="highlight-heading">{{title}}</h1>
+            <p>{{excerpt words="26"}}</p>
+        </div>
+    </a>
 </article>
 {{/foreach}}
 

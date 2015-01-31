@@ -3,6 +3,10 @@
 	display: inline-block;
 	box-shadow: 0 9px 15px rgba(30, 30, 30, 0.5);
 	@include rem(margin-bottom, 1.5em);
+
+	> a {
+		text-decoration: none;
+	}
 }
 
 .article-highlight {
@@ -12,6 +16,12 @@
 
 .article-highlight-image {
 	vertical-align: baseline;
+}
+
+.article-highlight-image-crop {
+	width: 306px;
+	height: 306px;
+	overflow: hidden;
 }
 
 .highlight-heading, .text-highlight-heading {
