@@ -155,6 +155,6 @@ gulp.task('createtheme', function() {
 // Default Task
 gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme', 'ghost', 'server', 'watch' ]);
 
-gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'html', 'createtheme']);
+gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'html', 'createtheme', 'ghost']);
 
 gulp.task('run', ['server']);
