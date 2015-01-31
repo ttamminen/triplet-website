@@ -9,6 +9,7 @@ var livereload = require('gulp-livereload');
 var gutil = require('gulp-util');
 var fileinclude = require('gulp-file-include');
 var prefix = require('gulp-autoprefixer');
+var nodemon = require('gulp-nodemon');
 
 // for the release
 var htmlmin = require('gulp-htmlmin');
@@ -136,13 +137,24 @@ gulp.task('server', function (next) {
         });
 });
 
-gulp.task('createtheme', function() {
+gulp.task('ghost', function () {
+	nodemon({ 
+		script: 'index.js', 
+		ext: 'scss js', 
+		ignore: ['dist/', 'public/', 'core/', 'content/themes/'] 
+	})
+	.on('change', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme'])
+	.on('restart', livereload);
+});
 
+gulp.task('createtheme', function() {
+	return gulp.src(['dist/css/**/*.css', 'dist/fonts/**/*.*', 'dist/images/**/*.*', 'dist/js/**/*.js'], { base: './dist'})
+		.pipe(gulp.dest(themeRoot));
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'server', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme', 'ghost', 'server', 'watch' ]);
 
-gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'htmlmin', 'createtheme']);
+gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'html', 'createtheme']);
 
 gulp.task('run', ['server']);

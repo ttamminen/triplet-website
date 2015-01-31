@@ -45,3 +45,15 @@ img[src*=".svg"] {
 		width: 100%;
 	}
 }
+
+body {
+	background-color: $page-background-color;
+}
+
+a, a:visited, a:active {
+	color: $link-color;
+}
+
+a:hover {
+	color: $link-hover-color;	
+}

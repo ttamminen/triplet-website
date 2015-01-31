@@ -1,9 +1,11 @@
+$blog-post-content-background-color: $t3-white;
+
 %horizontal-rule {
 	border-bottom: 1px solid #d7d7d7;
 }
 
 .blog-post {
-	
+	margin-bottom: 4em;
 }
 
 .blog-post-info-header {
@@ -15,6 +17,7 @@
 	@extend %centered-content;
 	max-width: $content-max-width;
 	padding: 2em 6em;
+	background-color: $blog-post-content-background-color;
 }
 
 .blog-post-caption {
