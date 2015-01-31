@@ -141,7 +141,7 @@ gulp.task('ghost', ['createtheme'], function () {
 	nodemon({ 
 		script: 'index.js', 
 		ext: 'scss js', 
-		ignore: ['dist/', 'public/', 'core/', 'content/themes/'] 
+		ignore: ['dist/', 'public/', 'core/', 'content/themes/', 'node_modules/'] 
 	})
 	.on('change', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme'])
 	.on('restart', livereload);
