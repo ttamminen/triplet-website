@@ -147,7 +147,7 @@ gulp.task('ghost', ['createtheme'], function () {
 	.on('restart', livereload);
 });
 
-gulp.task('createtheme', function() {
+gulp.task('createtheme', ['sass'] function() {
 	return gulp.src(['dist/css/**/*.css', 'dist/fonts/**/*.*', 'dist/images/**/*.*', 'dist/js/**/*.js'], { base: './dist'})
 		.pipe(gulp.dest(themeRoot));
 });

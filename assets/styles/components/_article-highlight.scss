@@ -14,13 +14,19 @@
 	background-color: $t3-white;
 }
 
+.article-highlight.narrow {
+	width: 33.73759647188534%;
+	max-width: 304px;
+	margin-left: 1.34020618556701%;
+	margin-right: 1.34020618556701%;
+}
+
 .article-highlight-image {
 	vertical-align: baseline;
 }
 
 .article-highlight-image-crop {
-	width: 306px;
-	height: 306px;
+	width: 100%;
 	overflow: hidden;
 }
 

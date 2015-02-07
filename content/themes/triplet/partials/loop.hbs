@@ -5,10 +5,10 @@
 
 {{! This is the post loop - each post will be output using this markup }}
 {{#foreach posts}}
-<article class="article-highlight {{post_class}}">
+<article class="article-highlight narrow {{post_class}}">
     <a href="{{url}}">
         <div class="article-highlight-image-crop">
-            <img class="article-highlight-image" src="{{image}}" alt="Mock-image">
+            <img class="article-highlight-image" src="{{image}}" alt="{{title}}">
         </div>
         <div class="highlight-content">
             <h1 class="highlight-heading">{{title}}</h1>
