@@ -10,6 +10,7 @@ var gutil = require('gulp-util');
 var fileinclude = require('gulp-file-include');
 var prefix = require('gulp-autoprefixer');
 var nodemon = require('gulp-nodemon');
+var server = require( 'gulp-develop-server');
 
 // for the release
 var htmlmin = require('gulp-htmlmin');
@@ -110,15 +111,15 @@ gulp.task('static', function () {
 });
 
 // Watch Files For Changes
-gulp.task('watch', ['server'], function() {
+gulp.task('watch', ['createtheme'], function() {
     livereload.listen({ basePath: 'dist' });
-    gulp.watch(assetsRoot + 'js/**', ['scripts']);
-    gulp.watch(assetsRoot + 'scss/**/*.scss', ['sass']);
-    gulp.watch(assetsRoot + 'html/**/*.html', ['html', 'sass', 'scripts']);
-    gulp.watch(assetsRoot + 'images/**', ['image']);
+    gulp.watch(assetsRoot + 'js/**/*', ['scripts', 'createtheme', 'server:restart']);
+    gulp.watch(assetsRoot + 'styles/**/*.scss', ['sass', 'createtheme', 'server:restart']);
+    gulp.watch(assetsRoot + 'html/**/*.html', ['html', 'sass', 'scripts', 'createtheme', 'server:restart']);
+    gulp.watch(assetsRoot + 'images/**/*', ['image', 'createtheme', 'server:restart']);
 });
 
-gulp.task('server', function (next) {
+gulp.task('styleguide', function (next) {
     var url = require('url'),
         fileServer = require('ecstatic')({
             root: './dist', 
@@ -147,14 +148,22 @@ gulp.task('ghost', ['createtheme'], function () {
 	.on('restart', livereload);
 });
 
-gulp.task('createtheme', ['sass'] function() {
+gulp.task('createtheme', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html'], function () {
 	return gulp.src(['dist/css/**/*.css', 'dist/fonts/**/*.*', 'dist/images/**/*.*', 'dist/js/**/*.js'], { base: './dist'})
 		.pipe(gulp.dest(themeRoot));
 });
 
+// run server
+gulp.task( 'server:start', ['createtheme'], function() {
+    server.listen( { path: './index.js' } );
+});
+
+// restart server if app.js changed
+gulp.task( 'server:restart', ['createtheme'], function() {
+    server.restart;
+});
+
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme', 'ghost', 'server', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme', 'server:start', 'styleguide', 'watch' ]);
 
 gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'html', 'createtheme', 'ghost']);
-
-gulp.task('run', ['server']);

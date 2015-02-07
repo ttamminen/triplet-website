@@ -25,11 +25,6 @@
 	vertical-align: baseline;
 }
 
-.article-highlight-image-crop {
-	width: 100%;
-	overflow: hidden;
-}
-
 .highlight-heading, .text-highlight-heading {
 	@include rem(margin-bottom, 2.625rem);
 }
