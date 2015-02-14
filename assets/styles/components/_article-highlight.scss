@@ -23,6 +23,9 @@
 
 .article-highlight-image {
 	vertical-align: baseline;
+	display: block;
+	width: 100%;
+	margin-top: -1px; // removes nasty white line :(
 }
 
 .highlight-heading, .text-highlight-heading {

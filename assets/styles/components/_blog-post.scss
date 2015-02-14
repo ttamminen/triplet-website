@@ -14,10 +14,18 @@ $blog-post-content-background-color: $t3-white;
 }
 
 .blog-post-content {
-	@extend %centered-content;
-	max-width: $content-max-width;
-	padding: 2em 6em;
+	padding: 1em;
 	background-color: $blog-post-content-background-color;
+
+	@media screen and (min-width: 30em) {
+		margin: 0 2em;
+	}
+
+	@media screen and (min-width: 40em) {
+		padding: 2em 6em;
+		@extend %centered-content;
+		max-width: $content-max-width;
+	}
 }
 
 .blog-post-caption {
