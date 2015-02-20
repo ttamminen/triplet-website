@@ -140,7 +140,7 @@ gulp.task('styleguide', function (next) {
 
 gulp.task('ghost', ['createtheme'], function () {
 	nodemon({ 
-		script: 'index.js', 
+		script: 'index.js --production', 
 		ext: 'scss js', 
 		ignore: ['dist/**/*', 'core/**/*', 'content/**/*', 'node_modules/**/*'] 
 	})
