@@ -20,7 +20,7 @@ function getStorage(storageChoice) {
     // Instantiate and cache the storage module instance.
     storage[storageChoice] = new storage[storageChoice]({
         errors: errors,
-        config: require(path.join(process.cwd(), 'config'))().aws
+        config: require('../config').aws
     });
 
     return storage[storageChoice];
