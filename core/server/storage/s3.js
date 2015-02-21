@@ -7,7 +7,6 @@ var nodefn = require('when/node/function');
 var when = require('when');
 var readFile = nodefn.lift(fs.readFile);
 var unlink = nodefn.lift(fs.unlink);
-var 
 var AWS = require('aws-sdk');
 var config;
 
