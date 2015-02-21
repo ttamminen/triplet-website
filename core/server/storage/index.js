@@ -12,16 +12,16 @@ function getStorage(storageChoice) {
 
     try {
         // TODO: determine if storage has all the necessary methods.
-        storage[storageChoice] = require('./' + storageChoice)({
-            errors: errors,
-            config: require('../config')().aws
-        });
+        storage[storageChoice] = require('./' + storageChoice);
     } catch (e) {
         errors.logError(e);
     }
 
     // Instantiate and cache the storage module instance.
-    storage[storageChoice] = new storage[storageChoice]();
+    storage[storageChoice] = new storage[storageChoice]({
+        errors: errors,
+        config: require('../config')().aws
+    });
 
     return storage[storageChoice];
 }
