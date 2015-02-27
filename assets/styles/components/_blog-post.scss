@@ -23,7 +23,9 @@ $blog-post-content-background-color: $t3-white;
 
 	@media screen and (min-width: 40em) {
 		padding: 2em 6em;
-		@extend %centered-content;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
 		max-width: $content-max-width;
 	}
 }
@@ -38,7 +40,6 @@ $blog-post-content-background-color: $t3-white;
 	padding-bottom: 5em;
 	margin-bottom: 1em;
 	@extend %horizontal-rule;
-	float: left;
 }
 
 .blog-post-body .blog-post-caption {
@@ -47,10 +48,6 @@ $blog-post-content-background-color: $t3-white;
 
 .blog-post-body p:last-child {
 	margin-bottom: 0;
-}
-
-.blog-post-share {
-	clear: both;
 }
 
 .blog-post-share-caption {

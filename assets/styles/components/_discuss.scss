@@ -1,0 +1,12 @@
+.discuss {
+	@extend %centered-content;
+	max-width: $content-max-width;
+
+	.m-moot {
+		background-color: $t3-white;
+	}
+
+	.is-commenting {
+		padding: 0;
+	}	
+}

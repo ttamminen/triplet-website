@@ -18,12 +18,16 @@
             <div class="blog-post-body">                    
                 {{content}}
             </div>
-            <div class="blog-post-share">
+            <!--<div class="blog-post-share">
                 <p class="blog-post-share-caption">Share this post</p>                  
-            </div>
-            {{> pagination}}
-        <div>
+            </div>-->
+        </div>
+        <aside class="discuss">
+            <a href="https://muut.com/i/triplet/comments/general:{{{id}}}" class="muut" type="dynamic">Comments on {{{title}}}</a>            
+        </aside>
     </article>
 </main>
 
 {{/post}}
+
+<script src="//cdn.muut.com/1/moot.min.js"></script>
