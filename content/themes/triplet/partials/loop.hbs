@@ -1,13 +1,8 @@
-{{! Previous/next page links - only displayed on page 2+ }}
-<div class="extra-pagination inner">
-    {{pagination}}
-</div>
-
 {{! This is the post loop - each post will be output using this markup }}
 {{#foreach posts}}
 <article class="article-highlight narrow {{post_class}}">
     <a href="{{url}}">
-        <img class="article-highlight-image" src="http://i60.tinypic.com/34ryg68.jpg" alt="{{title}}">
+        <img class="article-highlight-image" src="{{blogPostMiniImage image}}" alt="{{title}}">
 
         <div class="highlight-content">
             <h1 class="highlight-heading">{{title}}</h1>
@@ -16,6 +11,3 @@
     </a>
 </article>
 {{/foreach}}
-
-{{! Previous/next page links - displayed on every page }}
-{{pagination}}
