@@ -19,7 +19,7 @@ errors = require('./core/server/errors');
 parentApp = express();
 
 parentApp.get('/', function(req, res) {
-	res.send('hello world');
+	res.redirect('/blog');
 })
 
 ghost().then(function (ghostServer) {
