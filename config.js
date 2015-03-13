@@ -67,29 +67,23 @@ config = {
         //      }
         //  },
         // ```
-
         database: {
-            client: 'postgres',
+            client: 'sqlite3',
             connection: {
-                host: 'localhost',
-                user: 'postgres',
-                password: '1mafia',
-                database: 'blog',
-                port: 5432
-            }
+                filename: path.join(__dirname, '/content/data/ghost-dev.db')
+            },
+            debug: false
         },
+
+        fileStorage: true,
+
         server: {
             // Host to be passed to node's `net.Server#listen()`
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
         },
-		aws: {
-			accessKeyId: process.env.AWS_ACCESS_ID,
-			secretAccessKey: process.env.AWS_ACCESS_SECRET,
-			bucket: process.env.AWS_BUCKET_NAME,
-			region: process.env.AWS_BUCKET_REGION
-		},        
+
         paths: {
             contentPath: path.join(__dirname, '/content/')
         }

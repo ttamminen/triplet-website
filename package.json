@@ -89,7 +89,8 @@
     "vinyl-paths": "^1.0.0",
     "xml": "0.0.12",
     "when": "^3.7.2",
-    "aws-sdk": "^2.1.13"
+    "aws-sdk": "^2.1.13",
+    "sqlite3": "3.0.4"
   },
   "optionalDependencies": {
     "mysql": "2.1.1",

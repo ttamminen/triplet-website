@@ -1,6 +1,7 @@
 node_modules
 dist
 content/themes/triplet
+content/data
 
 # Windows image file caches
 Thumbs.db
