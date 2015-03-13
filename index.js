@@ -22,6 +22,8 @@ parentApp.get('/', function(req, res) {
 	res.redirect('/blog');
 })
 
+parentApp.use(express.static(__dirname + '/public'));
+
 ghost().then(function (ghostServer) {
     // Mount our ghost instance on our desired subdirectory path if it exists.
     parentApp.use(ghostServer.config.paths.subdir, ghostServer.rootApp);
