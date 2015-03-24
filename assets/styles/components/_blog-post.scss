@@ -50,9 +50,30 @@ $blog-post-content-background-color: $t3-white;
 	margin-bottom: 0;
 }
 
-.blog-post-share-caption {
+.blog-post-author {
+	@extend %group;
+}
+
+.blog-post-author-caption {
 	@include eta;
 	font-weight: 200;
+}
+
+.blog-post-author-image {
+	float: left;
+	width: 30%;
+	max-width: 194px;
+}
+
+.blog-post-author-description {
+	float: left;
+	width: 65%;
+	margin-left: 5%;
+	margin-top: 1rem;
+}
+
+.blog-post-author-description-text {
+	margin-bottom: 0.5rem;
 }
 
 .blog-post-left-floated-content-image {

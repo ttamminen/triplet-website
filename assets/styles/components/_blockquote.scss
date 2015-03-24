@@ -4,19 +4,25 @@ blockquote {
 	font-size: 1.4em;
 	margin:1em auto;
 	font-style:italic;
-	padding:1.2em 30px 1.2em 75px;
+	padding:1em 25px 1em 25px;
 	border-left:8px solid lighten($blockquote-effect-color,20%);
 	position: relative;
 }
 
-blockquote::before {
-	font-family:Arial;
-	content: "\201C";
-	color:$blockquote-effect-color;
-	font-size:4em;
-	position: absolute;
-	left: 10px;
-	top:-10px;
+@media screen and (min-width: 30em) {
+	blockquote {
+		padding:1.2em 30px 1.2em 75px;
+	}
+
+	blockquote::before {
+		font-family:Arial;
+		content: "\201C";
+		color:$blockquote-effect-color;
+		font-size:4em;
+		position: absolute;
+		left: 10px;
+		top:-10px;
+	}
 }
 
 blockquote::after {
