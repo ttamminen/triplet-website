@@ -1,7 +1,6 @@
 .u-content {
 	> header {
-		@extend %centered-content;
-		max-width: $max-width;
+		@extend %centered-content;		
 	}
 
 	> div, > section {
