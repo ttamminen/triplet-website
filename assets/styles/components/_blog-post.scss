@@ -8,6 +8,10 @@ $blog-post-content-background-color: $t3-white;
 	margin-bottom: 4em;
 }
 
+.blog-post img {
+	max-width: 100%;
+}
+
 .blog-post-info-header {
 	padding-bottom: 0.5em;
 	@extend %horizontal-rule;
