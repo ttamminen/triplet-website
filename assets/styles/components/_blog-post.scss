@@ -66,7 +66,12 @@ $blog-post-content-background-color: $t3-white;
 .blog-post-author-image {
 	float: left;
 	width: 30%;
-	max-width: 194px;
+	border-radius: 50%;
+	transition: border-radius 2s;
+}
+
+.blog-post-author-image:hover {
+	border-radius: 0;
 }
 
 .blog-post-author-description {
@@ -74,6 +79,13 @@ $blog-post-content-background-color: $t3-white;
 	width: 65%;
 	margin-left: 5%;
 	margin-top: 1rem;
+}
+
+@media screen and (min-width: 50em) {
+	.blog-post-author-description {
+		margin-top: 0;
+		transform: translateY(50%);
+	}
 }
 
 .blog-post-author-description-text {
