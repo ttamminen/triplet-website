@@ -1,5 +1,30 @@
+$article-highlight-margin: 1.34020618556701%;
+$article-highlight-xl-margin: 1%;
+$article-highlight-sm-margin: 2%;
+
 .blog-front {
+	@extend %group;
+
 	.article-highlight {
 		float: left;
+		width: 100% - $article-highlight-sm-margin * 2;
+		margin-left: $article-highlight-sm-margin;
+		margin-right: $article-highlight-sm-margin;
 	}
+
+	@media screen and (min-width: 35em) {
+		.article-highlight {
+			width: (100% - $article-highlight-margin * 6) / 3;
+			margin-left: $article-highlight-margin;
+			margin-right: $article-highlight-margin;
+		}
+	}
+
+	@media screen and (min-width: 70em) {
+		.article-highlight {
+			width: (100% - $article-highlight-xl-margin * 8) / 4;
+			margin-left: $article-highlight-xl-margin;
+			margin-right: $article-highlight-xl-margin;
+		}
+	}	
 }
