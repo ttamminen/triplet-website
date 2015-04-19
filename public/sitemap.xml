@@ -8,42 +8,77 @@
 
 <url>
   <loc>http://www.triplet.fi/blog/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 <url>
-  <loc>http://www.triplet.fi/blog/riot-custom-tag-by-example/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <loc>http://www.triplet.fi/blog/getting_rid_of_terminate_batch_job_while_developing_node_application_on_windows/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 <url>
-  <loc>http://www.triplet.fi/blog/how-to-use-contenteditable-attribute/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <loc>http://www.triplet.fi/blog/how_node_package_deprecation_works/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/adding_compiled_riot_tags_to_your_gulp_browserify_build/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/collecting_your_sales_leads_using_linkedin_google_spreadsheets_and_trello/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/riot-compiler-explained/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/tag/node/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/tag/windows/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/tag/npm/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>http://www.triplet.fi/blog/tag/riot/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>http://www.triplet.fi/blog/tag/javascript/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/tag/freelancing/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/tag/linkedin/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://www.triplet.fi/blog/riot-custom-tag-by-example/</loc>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>http://www.triplet.fi/blog/tag/ui/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
-  <changefreq>weekly</changefreq>
-</url>
-<url>
-  <loc>http://www.triplet.fi/blog/tag/html5/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
-  <changefreq>weekly</changefreq>
-</url>
-<url>
-  <loc>http://www.triplet.fi/blog/tag/css/</loc>
-  <lastmod>2015-03-13T15:55:14+00:00</lastmod>
+  <lastmod>2015-04-19T13:56:02+00:00</lastmod>
   <changefreq>weekly</changefreq>
 </url>
 </urlset>
