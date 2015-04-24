@@ -90,7 +90,7 @@ gulp.task('font', function () {
 });
 
 gulp.task('image', function () {
-    return gulp.src(assetsRoot + 'images/*')
+    return gulp.src(assetsRoot + 'images/**')
         .pipe(imagemin({
             progressive: true,
             svgoPlugins: [
