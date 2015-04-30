@@ -59,6 +59,20 @@
     {{ghost_foot}}
 
     <script src="{{asset "js/vendor/highlight.pack.js"}}"></script>
+    <script src="{{asset "js/vendor/masonry.pkgd.min.js"}}"></script>
     <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function(event) { 
+            var container = document.querySelector('.blog-front');
+            if(!container) {
+                return;
+            }
+
+            var msnry = new Masonry( container, {
+                // options
+                itemSelector: '.post'
+            });
+          });
+    </script>
 </body>
 </html>
