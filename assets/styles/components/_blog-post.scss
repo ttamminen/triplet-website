@@ -12,6 +12,17 @@ $blog-post-content-background-color: $t3-white;
 	max-width: 100%;
 }
 
+.blog-post .rss {
+	position: absolute;
+	right: 0;
+	top: 0;
+	margin-bottom: 0;
+}
+
+.blog-post-info {
+	position: relative;
+}
+
 .blog-post-info-header {
 	padding-bottom: 0.5em;
 	@extend %horizontal-rule;
@@ -38,6 +49,7 @@ $blog-post-content-background-color: $t3-white;
 	@include zeta;
 	@include rem(margin-bottom, $zeta-font-size * 1.5);
 	font-weight: 200;
+	width: 94%;
 }
 
 .blog-post-body {
