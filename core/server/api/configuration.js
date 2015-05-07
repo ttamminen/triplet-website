@@ -10,13 +10,15 @@ var _                  = require('lodash'),
 function getValidKeys() {
     var validKeys = {
             fileStorage: config.fileStorage === false ? false : true,
+            passProtectUI: config.passProtectUI === true ? true : false,
             apps: config.apps === true ? true : false,
             version: config.ghostVersion,
             environment: process.env.NODE_ENV,
             database: config.database.client,
             mail: _.isObject(config.mail) ? config.mail.transport : '',
             blogUrl: config.url.replace(/\/$/, ''),
-            blogTitle: config.theme.title
+            blogTitle: config.theme.title,
+            routeKeywords: JSON.stringify(config.routeKeywords)
         };
 
     return validKeys;
