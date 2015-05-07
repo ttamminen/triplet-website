@@ -524,6 +524,17 @@ define('ghost/components/gh-activating-list-item', ['exports', 'ember'], functio
     exports['default'] = ActivatingListItem;
 
 });
+define('ghost/components/gh-blog-url', ['exports', 'ember'], function (exports, Ember) {
+
+    'use strict';
+
+    var blogUrl = Ember['default'].Component.extend({
+        tagName: ""
+    });
+
+    exports['default'] = blogUrl;
+
+});
 define('ghost/components/gh-cm-editor', ['exports', 'ember'], function (exports, Ember) {
 
     'use strict';
@@ -1680,6 +1691,10 @@ define('ghost/controllers/feature', ['exports', 'ember'], function (exports, Emb
             }
 
             return value;
+        }),
+
+        passProtectUI: Ember['default'].computed("config.passProtectUI", "labs.passProtectUI", function () {
+            return this.get("config.passProtectUI") || this.get("labs.passProtectUI");
         })
     });
 
@@ -3135,6 +3150,8 @@ define('ghost/controllers/settings', ['exports', 'ember'], function (exports, Em
 
     var SettingsController = Ember['default'].Controller.extend({
 
+        needs: ["feature"],
+
         showGeneral: Ember['default'].computed("session.user.name", function () {
             return this.get("session.user.isAuthor") || this.get("session.user.isEditor") ? false : true;
         }),
@@ -3155,6 +3172,9 @@ define('ghost/controllers/settings', ['exports', 'ember'], function (exports, Em
         }),
         showAbout: Ember['default'].computed("session.user.name", function () {
             return this.get("session.user.isAuthor") ? false : true;
+        }),
+        showPassProtection: Ember['default'].computed("session.user.name", "controllers.feature.passProtectUI", function () {
+            return this.get("session.user.isAuthor") || this.get("session.user.isEditor") || !this.get("controllers.feature.passProtectUI") ? false : true;
         })
     });
 
@@ -3345,6 +3365,16 @@ define('ghost/controllers/settings/labs', ['exports', 'ember'], function (export
                 self.get("model").rollback();
             });
         },
+
+        usePassProtectUI: Ember['default'].computed("controllers.feature.passProtectUI", function (key, value) {
+            // setter
+            if (arguments.length > 1) {
+                this.saveLabs("passProtectUI", value);
+            }
+
+            // getter
+            return this.get("controllers.feature.passProtectUI");
+        }),
 
         actions: {
             onUpload: function onUpload(file) {
@@ -3579,6 +3609,37 @@ define('ghost/controllers/settings/navigation', ['exports', 'ember'], function (
     });
 
     exports['default'] = NavigationController;
+
+});
+define('ghost/controllers/settings/pass-protect', ['exports', 'ember'], function (exports, Ember) {
+
+    'use strict';
+
+    var SettingsPassProtectController = Ember['default'].Controller.extend({
+
+        actions: {
+            save: function save() {
+                var self = this;
+                if (this.get("model.isPrivate") && this.get("model.password") === "") {
+                    self.notifications.closePassive();
+                    self.notifications.showError("Password must have a value.");
+                    return;
+                }
+
+                return this.get("model").save().then(function (model) {
+                    self.notifications.closePassive();
+                    self.notifications.showSuccess("Settings successfully saved.");
+
+                    return model;
+                })["catch"](function (errors) {
+                    self.notifications.closePassive();
+                    self.notifications.showErrors(errors);
+                });
+            }
+        }
+    });
+
+    exports['default'] = SettingsPassProtectController;
 
 });
 define('ghost/controllers/settings/tags', ['exports', 'ember', 'ghost/mixins/pagination-controller', 'ghost/mixins/settings-menu-controller', 'ghost/utils/bound-one-way'], function (exports, Ember, PaginationMixin, SettingsMenuMixin, boundOneWay) {
@@ -4121,17 +4182,6 @@ define('ghost/controllers/signup', ['exports', 'ember', 'ghost/utils/ajax', 'gho
     exports['default'] = SignupController;
 
 });
-define('ghost/helpers/gh-blog-url', ['exports', 'ember'], function (exports, Ember) {
-
-    'use strict';
-
-    var blogUrl = Ember['default'].HTMLBars.makeBoundHelper(function () {
-        return Ember['default'].String.htmlSafe(this.get("config.blogUrl"));
-    });
-
-    exports['default'] = blogUrl;
-
-});
 define('ghost/helpers/gh-count-characters', ['exports', 'ember'], function (exports, Ember) {
 
     'use strict';
@@ -4626,10 +4676,6 @@ define('ghost/mixins/current-user-settings', ['exports', 'ember'], function (exp
     'use strict';
 
     var CurrentUserSettings = Ember['default'].Mixin.create({
-        currentUser: function currentUser() {
-            return this.store.find("user", "me");
-        },
-
         transitionAuthor: function transitionAuthor() {
             var self = this;
 
@@ -6365,6 +6411,17 @@ define('ghost/models/post', ['exports', 'ember', 'ember-data', 'ghost/mixins/val
             return this.get("ghostPaths.url").join(blogUrl, postUrl);
         }),
 
+        previewUrl: Ember['default'].computed("uuid", "ghostPaths.url", "config.blogUrl", "config.routeKeywords.preview", function () {
+            var blogUrl = this.get("config.blogUrl"),
+                uuid = this.get("uuid"),
+                previewKeyword = this.get("config.routeKeywords.preview");
+            // New posts don't have a preview
+            if (!uuid) {
+                return "";
+            }
+            return this.get("ghostPaths.url").join(blogUrl, previewKeyword, uuid);
+        }),
+
         scratch: null,
         titleScratch: null,
 
@@ -6435,7 +6492,9 @@ define('ghost/models/setting', ['exports', 'ember-data', 'ghost/mixins/validatio
         ghost_head: DS['default'].attr("string"),
         ghost_foot: DS['default'].attr("string"),
         labs: DS['default'].attr("string"),
-        navigation: DS['default'].attr("string")
+        navigation: DS['default'].attr("string"),
+        isPrivate: DS['default'].attr("boolean"),
+        password: DS['default'].attr("string")
     });
 
     exports['default'] = Setting;
@@ -6653,6 +6712,7 @@ define('ghost/router', ['exports', 'ember', 'ghost/utils/ghost-paths', 'ghost/ut
             this.route("labs");
             this.route("code-injection");
             this.route("navigation");
+            this.route("pass-protect");
         });
 
         // Redirect debug to settings labs
@@ -6744,7 +6804,7 @@ define('ghost/routes/application', ['exports', 'ember', 'ghost/mixins/shortcuts-
                     return;
                 }
 
-                this.store.find("user", "me").then(function (user) {
+                this.get("session.user").then(function (user) {
                     self.send("signedIn", user);
                     var attemptedTransition = self.get("session").get("attemptedTransition");
                     if (attemptedTransition) {
@@ -6806,10 +6866,14 @@ define('ghost/routes/application', ['exports', 'ember', 'ghost/mixins/shortcuts-
                 var self = this;
 
                 if (this.session.isAuthenticated) {
-                    this.store.findAll("notification").then(function (serverNotifications) {
-                        serverNotifications.forEach(function (notification) {
-                            self.notifications.handleNotification(notification, isDelayed);
-                        });
+                    this.get("session.user").then(function (user) {
+                        if (!user.get("isAuthor") && !user.get("isEditor")) {
+                            self.store.findAll("notification").then(function (serverNotifications) {
+                                serverNotifications.forEach(function (notification) {
+                                    self.notifications.handleNotification(notification, isDelayed);
+                                });
+                            });
+                        }
                     });
                 }
             },
@@ -6914,7 +6978,7 @@ define('ghost/routes/editor/edit', ['exports', 'ghost/routes/authenticated', 'gh
         afterModel: function afterModel(post) {
             var self = this;
 
-            return self.store.find("user", "me").then(function (user) {
+            return self.get("session.user").then(function (user) {
                 if (user.get("isAuthor") && !post.isAuthoredByUser(user)) {
                     return self.replaceWith("posts.index");
                 }
@@ -7060,7 +7124,7 @@ define('ghost/routes/posts', ['exports', 'ember', 'ghost/routes/authenticated', 
         model: function model() {
             var self = this;
 
-            return this.store.find("user", "me").then(function (user) {
+            return this.get("session.user").then(function (user) {
                 if (user.get("isAuthor")) {
                     paginationSettings.author = user.get("slug");
                 }
@@ -7175,7 +7239,7 @@ define('ghost/routes/posts/index', ['exports', 'ghost/routes/mobile-index-route'
             posts = this.store.all("post"),
                 post;
 
-            return this.store.find("user", "me").then(function (user) {
+            return this.get("session.user").then(function (user) {
                 post = posts.find(function (post) {
                     // Authors can only see posts they've written
                     if (user.get("isAuthor")) {
@@ -7244,7 +7308,7 @@ define('ghost/routes/posts/post', ['exports', 'ghost/routes/authenticated', 'gho
         afterModel: function afterModel(post) {
             var self = this;
 
-            return self.store.find("user", "me").then(function (user) {
+            return self.get("session.user").then(function (user) {
                 if (user.get("isAuthor") && !post.isAuthoredByUser(user)) {
                     return self.replaceWith("posts.index");
                 }
@@ -7363,7 +7427,7 @@ define('ghost/routes/settings/apps', ['exports', 'ghost/routes/authenticated', '
                 return this.transitionTo("settings.general");
             }
 
-            return this.currentUser().then(this.transitionAuthor()).then(this.transitionEditor());
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor());
         },
 
         model: function model() {
@@ -7382,7 +7446,7 @@ define('ghost/routes/settings/code-injection', ['exports', 'ghost/routes/authent
         classNames: ["settings-view-code"],
 
         beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor()).then(this.transitionEditor());
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor());
         },
 
         model: function model() {
@@ -7411,7 +7475,7 @@ define('ghost/routes/settings/general', ['exports', 'ghost/routes/authenticated'
         classNames: ["settings-view-general"],
 
         beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor()).then(this.transitionEditor());
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor());
         },
 
         model: function model() {
@@ -7442,7 +7506,7 @@ define('ghost/routes/settings/index', ['exports', 'ghost/routes/mobile-index-rou
         // is mobile
         beforeModel: function beforeModel() {
             var self = this;
-            return this.currentUser().then(this.transitionAuthor()).then(this.transitionEditor()).then(function () {
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor()).then(function () {
                 if (!mobileQuery['default'].matches) {
                     self.transitionTo("settings.general");
                 }
@@ -7466,7 +7530,7 @@ define('ghost/routes/settings/labs', ['exports', 'ghost/routes/authenticated', '
 
         classNames: ["settings"],
         beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor()).then(this.transitionEditor());
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor());
         },
 
         model: function model() {
@@ -7490,7 +7554,7 @@ define('ghost/routes/settings/navigation', ['exports', 'ghost/routes/authenticat
         classNames: ["settings-view-navigation"],
 
         beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor());
+            return this.get("session.user").then(this.transitionAuthor());
         },
 
         model: function model() {
@@ -7511,6 +7575,49 @@ define('ghost/routes/settings/navigation', ['exports', 'ghost/routes/authenticat
     });
 
     exports['default'] = NavigationRoute;
+
+});
+define('ghost/routes/settings/pass-protect', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/loading-indicator', 'ghost/mixins/current-user-settings', 'ghost/mixins/style-body'], function (exports, AuthenticatedRoute, loadingIndicator, CurrentUserSettings, styleBody) {
+
+    'use strict';
+
+    var SettingsPassProtectRoute = AuthenticatedRoute['default'].extend(styleBody['default'], loadingIndicator['default'], CurrentUserSettings['default'], {
+
+        classNames: ["settings-view-pass"],
+
+        beforeModel: function beforeModel() {
+            var feature = this.controllerFor("feature"),
+                self = this;
+
+            if (!feature) {
+                this.generateController("feature");
+                feature = this.controllerFor("feature");
+            }
+
+            return this.get("session.user").then(this.transitionAuthor()).then(this.transitionEditor()).then(function () {
+                return feature.then(function () {
+                    if (!feature.get("passProtectUI")) {
+                        return self.transitionTo("settings.general");
+                    }
+                });
+            });
+        },
+
+        model: function model() {
+            return this.store.find("setting", { type: "blog,theme" }).then(function (records) {
+                return records.get("firstObject");
+            });
+        },
+
+        actions: {
+            save: function save() {
+                this.get("controller").send("save");
+            }
+        }
+
+    });
+
+    exports['default'] = SettingsPassProtectRoute;
 
 });
 define('ghost/routes/settings/tags', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/current-user-settings', 'ghost/mixins/pagination-route'], function (exports, AuthenticatedRoute, CurrentUserSettings, PaginationRouteMixin) {
@@ -7535,7 +7642,7 @@ define('ghost/routes/settings/tags', ['exports', 'ghost/routes/authenticated', '
         titleToken: "Tags",
 
         beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor());
+            return this.get("session.user").then(this.transitionAuthor());
         },
 
         model: function model() {
@@ -7568,20 +7675,16 @@ define('ghost/routes/settings/tags', ['exports', 'ghost/routes/authenticated', '
     exports['default'] = TagsRoute;
 
 });
-define('ghost/routes/settings/users', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/current-user-settings'], function (exports, AuthenticatedRoute, CurrentUserSettings) {
+define('ghost/routes/settings/users', ['exports', 'ghost/routes/authenticated'], function (exports, AuthenticatedRoute) {
 
-    'use strict';
+	'use strict';
 
-    var UsersRoute = AuthenticatedRoute['default'].extend(CurrentUserSettings['default'], {
-        beforeModel: function beforeModel() {
-            return this.currentUser().then(this.transitionAuthor());
-        }
-    });
+	var UsersRoute = AuthenticatedRoute['default'].extend();
 
-    exports['default'] = UsersRoute;
+	exports['default'] = UsersRoute;
 
 });
-define('ghost/routes/settings/users/index', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/pagination-route', 'ghost/mixins/style-body'], function (exports, AuthenticatedRoute, PaginationRouteMixin, styleBody) {
+define('ghost/routes/settings/users/index', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/current-user-settings', 'ghost/mixins/pagination-route', 'ghost/mixins/style-body'], function (exports, AuthenticatedRoute, CurrentUserSettings, PaginationRouteMixin, styleBody) {
 
     'use strict';
 
@@ -7593,7 +7696,7 @@ define('ghost/routes/settings/users/index', ['exports', 'ghost/routes/authentica
         status: "active"
     };
 
-    UsersIndexRoute = AuthenticatedRoute['default'].extend(styleBody['default'], PaginationRouteMixin['default'], {
+    UsersIndexRoute = AuthenticatedRoute['default'].extend(styleBody['default'], CurrentUserSettings['default'], PaginationRouteMixin['default'], {
         titleToken: "Users",
 
         classNames: ["settings-view-users"],
@@ -7603,11 +7706,15 @@ define('ghost/routes/settings/users/index', ['exports', 'ghost/routes/authentica
             this.setupPagination(paginationSettings);
         },
 
+        beforeModel: function beforeModel() {
+            return this.get("session.user").then(this.transitionAuthor());
+        },
+
         model: function model() {
             var self = this;
 
             return self.store.find("user", { limit: "all", status: "invited" }).then(function () {
-                return self.store.find("user", "me").then(function (currentUser) {
+                return self.get("session.user").then(function (currentUser) {
                     if (currentUser.get("isEditor")) {
                         // Editors only see authors in the list
                         paginationSettings.role = "Author";
@@ -7633,11 +7740,11 @@ define('ghost/routes/settings/users/index', ['exports', 'ghost/routes/authentica
     exports['default'] = UsersIndexRoute;
 
 });
-define('ghost/routes/settings/users/user', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/style-body'], function (exports, AuthenticatedRoute, styleBody) {
+define('ghost/routes/settings/users/user', ['exports', 'ghost/routes/authenticated', 'ghost/mixins/current-user-settings', 'ghost/mixins/style-body'], function (exports, AuthenticatedRoute, CurrentUserSettings, styleBody) {
 
     'use strict';
 
-    var SettingsUserRoute = AuthenticatedRoute['default'].extend(styleBody['default'], {
+    var SettingsUserRoute = AuthenticatedRoute['default'].extend(styleBody['default'], CurrentUserSettings['default'], {
         titleToken: "User",
 
         classNames: ["settings-view-user"],
@@ -7661,7 +7768,7 @@ define('ghost/routes/settings/users/user', ['exports', 'ghost/routes/authenticat
 
         afterModel: function afterModel(user) {
             var self = this;
-            this.store.find("user", "me").then(function (currentUser) {
+            return this.get("session.user").then(function (currentUser) {
                 var isOwnProfile = user.get("id") === currentUser.get("id"),
                     isAuthor = currentUser.get("isAuthor"),
                     isEditor = currentUser.get("isEditor");
@@ -8045,7 +8152,7 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -8061,6 +8168,25 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         dom.appendChild(el2, el3);
         var el3 = dom.createElement("img");
         dom.setAttribute(el3,"alt","ErisDS");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("li");
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("a");
+        dom.setAttribute(el2,"href","https://github.com/novaugust");
+        dom.setAttribute(el2,"title","novaugust");
+        var el3 = dom.createTextNode("\n        ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("img");
+        dom.setAttribute(el3,"alt","novaugust");
         dom.appendChild(el2, el3);
         var el3 = dom.createTextNode("\n    ");
         dom.appendChild(el2, el3);
@@ -8112,25 +8238,6 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var el2 = dom.createTextNode("\n    ");
         dom.appendChild(el1, el2);
         var el2 = dom.createElement("a");
-        dom.setAttribute(el2,"href","https://github.com/novaugust");
-        dom.setAttribute(el2,"title","novaugust");
-        var el3 = dom.createTextNode("\n        ");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createElement("img");
-        dom.setAttribute(el3,"alt","novaugust");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("\n    ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n");
-        dom.appendChild(el1, el2);
-        dom.appendChild(el0, el1);
-        var el1 = dom.createTextNode("\n");
-        dom.appendChild(el0, el1);
-        var el1 = dom.createElement("li");
-        var el2 = dom.createTextNode("\n    ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("a");
         dom.setAttribute(el2,"href","https://github.com/JohnONolan");
         dom.setAttribute(el2,"title","JohnONolan");
         var el3 = dom.createTextNode("\n        ");
@@ -8169,12 +8276,12 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var el2 = dom.createTextNode("\n    ");
         dom.appendChild(el1, el2);
         var el2 = dom.createElement("a");
-        dom.setAttribute(el2,"href","https://github.com/halfdan");
-        dom.setAttribute(el2,"title","halfdan");
+        dom.setAttribute(el2,"href","https://github.com/cobbspur");
+        dom.setAttribute(el2,"title","cobbspur");
         var el3 = dom.createTextNode("\n        ");
         dom.appendChild(el2, el3);
         var el3 = dom.createElement("img");
-        dom.setAttribute(el3,"alt","halfdan");
+        dom.setAttribute(el3,"alt","cobbspur");
         dom.appendChild(el2, el3);
         var el3 = dom.createTextNode("\n    ");
         dom.appendChild(el2, el3);
@@ -8188,12 +8295,50 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var el2 = dom.createTextNode("\n    ");
         dom.appendChild(el1, el2);
         var el2 = dom.createElement("a");
-        dom.setAttribute(el2,"href","https://github.com/cobbspur");
-        dom.setAttribute(el2,"title","cobbspur");
+        dom.setAttribute(el2,"href","https://github.com/acburdine");
+        dom.setAttribute(el2,"title","acburdine");
         var el3 = dom.createTextNode("\n        ");
         dom.appendChild(el2, el3);
         var el3 = dom.createElement("img");
-        dom.setAttribute(el3,"alt","cobbspur");
+        dom.setAttribute(el3,"alt","acburdine");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("li");
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("a");
+        dom.setAttribute(el2,"href","https://github.com/sebgie");
+        dom.setAttribute(el2,"title","sebgie");
+        var el3 = dom.createTextNode("\n        ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("img");
+        dom.setAttribute(el3,"alt","sebgie");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("li");
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("a");
+        dom.setAttribute(el2,"href","https://github.com/rwjblue");
+        dom.setAttribute(el2,"title","rwjblue");
+        var el3 = dom.createTextNode("\n        ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("img");
+        dom.setAttribute(el3,"alt","rwjblue");
         dom.appendChild(el2, el3);
         var el3 = dom.createTextNode("\n    ");
         dom.appendChild(el2, el3);
@@ -8226,31 +8371,12 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var el2 = dom.createTextNode("\n    ");
         dom.appendChild(el1, el2);
         var el2 = dom.createElement("a");
-        dom.setAttribute(el2,"href","https://github.com/chilts");
-        dom.setAttribute(el2,"title","chilts");
+        dom.setAttribute(el2,"href","https://github.com/halfdan");
+        dom.setAttribute(el2,"title","halfdan");
         var el3 = dom.createTextNode("\n        ");
         dom.appendChild(el2, el3);
         var el3 = dom.createElement("img");
-        dom.setAttribute(el3,"alt","chilts");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("\n    ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n");
-        dom.appendChild(el1, el2);
-        dom.appendChild(el0, el1);
-        var el1 = dom.createTextNode("\n");
-        dom.appendChild(el0, el1);
-        var el1 = dom.createElement("li");
-        var el2 = dom.createTextNode("\n    ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("a");
-        dom.setAttribute(el2,"href","https://github.com/nsfmc");
-        dom.setAttribute(el2,"title","nsfmc");
-        var el3 = dom.createTextNode("\n        ");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createElement("img");
-        dom.setAttribute(el3,"alt","nsfmc");
+        dom.setAttribute(el3,"alt","halfdan");
         dom.appendChild(el2, el3);
         var el3 = dom.createTextNode("\n    ");
         dom.appendChild(el2, el3);
@@ -8311,6 +8437,7 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var element9 = dom.childAt(fragment, [18, 1, 1]);
         var element10 = dom.childAt(fragment, [20, 1, 1]);
         var element11 = dom.childAt(fragment, [22, 1, 1]);
+        var element12 = dom.childAt(fragment, [24, 1, 1]);
         var attrMorph0 = dom.createAttrMorph(element0, 'src');
         var attrMorph1 = dom.createAttrMorph(element1, 'src');
         var attrMorph2 = dom.createAttrMorph(element2, 'src');
@@ -8323,18 +8450,20 @@ define('ghost/templates/-contributors', ['exports'], function (exports) {
         var attrMorph9 = dom.createAttrMorph(element9, 'src');
         var attrMorph10 = dom.createAttrMorph(element10, 'src');
         var attrMorph11 = dom.createAttrMorph(element11, 'src');
+        var attrMorph12 = dom.createAttrMorph(element12, 'src');
         attribute(env, attrMorph0, element0, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/ErisDS"]));
-        attribute(env, attrMorph1, element1, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/jaswilli"]));
-        attribute(env, attrMorph2, element2, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/PaulAdamDavis"]));
-        attribute(env, attrMorph3, element3, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/novaugust"]));
+        attribute(env, attrMorph1, element1, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/novaugust"]));
+        attribute(env, attrMorph2, element2, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/jaswilli"]));
+        attribute(env, attrMorph3, element3, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/PaulAdamDavis"]));
         attribute(env, attrMorph4, element4, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/JohnONolan"]));
         attribute(env, attrMorph5, element5, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/felixrieseberg"]));
-        attribute(env, attrMorph6, element6, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/halfdan"]));
-        attribute(env, attrMorph7, element7, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/cobbspur"]));
-        attribute(env, attrMorph8, element8, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/dbalders"]));
-        attribute(env, attrMorph9, element9, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/chilts"]));
-        attribute(env, attrMorph10, element10, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/nsfmc"]));
-        attribute(env, attrMorph11, element11, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/pborreli"]));
+        attribute(env, attrMorph6, element6, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/cobbspur"]));
+        attribute(env, attrMorph7, element7, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/acburdine"]));
+        attribute(env, attrMorph8, element8, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/sebgie"]));
+        attribute(env, attrMorph9, element9, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/rwjblue"]));
+        attribute(env, attrMorph10, element10, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/dbalders"]));
+        attribute(env, attrMorph11, element11, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/halfdan"]));
+        attribute(env, attrMorph12, element12, "src", concat(env, [subexpr(env, context, "gh-path", ["admin", "/img/contributors"], {}), "/pborreli"]));
         return fragment;
       }
     };
@@ -8350,7 +8479,7 @@ define('ghost/templates/-import-errors', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -8396,7 +8525,7 @@ define('ghost/templates/-import-errors', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8441,7 +8570,7 @@ define('ghost/templates/-import-errors', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -8489,7 +8618,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8535,7 +8664,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8582,7 +8711,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -8627,7 +8756,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8668,7 +8797,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     var child3 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8749,7 +8878,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -8788,7 +8917,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
       var child1 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -8826,7 +8955,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8895,7 +9024,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     var child5 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -8948,7 +9077,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     var child6 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9089,7 +9218,7 @@ define('ghost/templates/-navbar', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9225,7 +9354,7 @@ define('ghost/templates/-publish-bar', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9319,7 +9448,7 @@ define('ghost/templates/-user-actions-menu', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9364,7 +9493,7 @@ define('ghost/templates/-user-actions-menu', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9409,7 +9538,7 @@ define('ghost/templates/-user-actions-menu', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9461,7 +9590,7 @@ define('ghost/templates/application', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9503,7 +9632,7 @@ define('ghost/templates/application', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9601,7 +9730,7 @@ define('ghost/templates/components/gh-activating-list-item', ['exports'], functi
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9645,7 +9774,7 @@ define('ghost/templates/components/gh-activating-list-item', ['exports'], functi
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9686,6 +9815,53 @@ define('ghost/templates/components/gh-activating-list-item', ['exports'], functi
   }()));
 
 });
+define('ghost/templates/components/gh-blog-url', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      isHTMLBars: true,
+      revision: "Ember@1.11.3",
+      blockParams: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      build: function build(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      render: function render(context, env, contextualElement) {
+        var dom = env.dom;
+        var hooks = env.hooks, content = hooks.content;
+        dom.detectNamespace(contextualElement);
+        var fragment;
+        if (env.useFragmentCache && dom.canClone) {
+          if (this.cachedFragment === null) {
+            fragment = this.build(dom);
+            if (this.hasRendered) {
+              this.cachedFragment = fragment;
+            } else {
+              this.hasRendered = true;
+            }
+          }
+          if (this.cachedFragment) {
+            fragment = dom.cloneNode(this.cachedFragment, true);
+          }
+        } else {
+          fragment = this.build(dom);
+        }
+        var morph0 = dom.createUnsafeMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, null);
+        dom.insertBoundary(fragment, 0);
+        content(env, morph0, context, "config.blogUrl");
+        return fragment;
+      }
+    };
+  }()));
+
+});
 define('ghost/templates/components/gh-ed-preview', ['exports'], function (exports) {
 
   'use strict';
@@ -9693,7 +9869,7 @@ define('ghost/templates/components/gh-ed-preview', ['exports'], function (export
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9741,7 +9917,7 @@ define('ghost/templates/components/gh-file-upload', ['exports'], function (expor
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -9813,7 +9989,7 @@ define('ghost/templates/components/gh-modal-dialog', ['exports'], function (expo
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9857,7 +10033,7 @@ define('ghost/templates/components/gh-modal-dialog', ['exports'], function (expo
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9904,7 +10080,7 @@ define('ghost/templates/components/gh-modal-dialog', ['exports'], function (expo
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -9982,7 +10158,7 @@ define('ghost/templates/components/gh-modal-dialog', ['exports'], function (expo
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10087,7 +10263,7 @@ define('ghost/templates/components/gh-navitem', ['exports'], function (exports) 
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10137,7 +10313,7 @@ define('ghost/templates/components/gh-navitem', ['exports'], function (exports) 
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10191,7 +10367,7 @@ define('ghost/templates/components/gh-navitem', ['exports'], function (exports) 
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10244,7 +10420,7 @@ define('ghost/templates/components/gh-navitem', ['exports'], function (exports) 
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10335,7 +10511,7 @@ define('ghost/templates/components/gh-notification', ['exports'], function (expo
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10411,7 +10587,7 @@ define('ghost/templates/components/gh-notifications', ['exports'], function (exp
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10453,7 +10629,7 @@ define('ghost/templates/components/gh-notifications', ['exports'], function (exp
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10501,7 +10677,7 @@ define('ghost/templates/components/gh-role-selector', ['exports'], function (exp
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10546,7 +10722,7 @@ define('ghost/templates/components/gh-role-selector', ['exports'], function (exp
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10602,7 +10778,7 @@ define('ghost/templates/components/gh-uploader', ['exports'], function (exports)
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10684,7 +10860,7 @@ define('ghost/templates/components/gh-url-preview', ['exports'], function (expor
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10733,7 +10909,7 @@ define('ghost/templates/editor-save-button', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10781,7 +10957,7 @@ define('ghost/templates/editor-save-button', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -10888,7 +11064,7 @@ define('ghost/templates/editor-save-button', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -10951,7 +11127,7 @@ define('ghost/templates/editor/edit', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11149,7 +11325,7 @@ define('ghost/templates/error', ['exports'], function (exports) {
         var child0 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -11190,7 +11366,7 @@ define('ghost/templates/error', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -11252,7 +11428,7 @@ define('ghost/templates/error', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -11325,7 +11501,7 @@ define('ghost/templates/error', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11439,7 +11615,7 @@ define('ghost/templates/forgotten', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11524,7 +11700,7 @@ define('ghost/templates/modals/copy-html', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -11566,7 +11742,7 @@ define('ghost/templates/modals/copy-html', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11614,7 +11790,7 @@ define('ghost/templates/modals/delete-all', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -11659,7 +11835,7 @@ define('ghost/templates/modals/delete-all', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11707,7 +11883,7 @@ define('ghost/templates/modals/delete-post', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -11765,7 +11941,7 @@ define('ghost/templates/modals/delete-post', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -11814,7 +11990,7 @@ define('ghost/templates/modals/delete-tag', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -11885,7 +12061,7 @@ define('ghost/templates/modals/delete-tag', ['exports'], function (exports) {
       var child1 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -11935,7 +12111,7 @@ define('ghost/templates/modals/delete-tag', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -11976,7 +12152,7 @@ define('ghost/templates/modals/delete-tag', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -12026,7 +12202,7 @@ define('ghost/templates/modals/delete-user', ['exports'], function (exports) {
         var child0 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -12089,7 +12265,7 @@ define('ghost/templates/modals/delete-user', ['exports'], function (exports) {
         var child1 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -12130,7 +12306,7 @@ define('ghost/templates/modals/delete-user', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -12170,7 +12346,7 @@ define('ghost/templates/modals/delete-user', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -12212,7 +12388,7 @@ define('ghost/templates/modals/delete-user', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -12260,7 +12436,7 @@ define('ghost/templates/modals/invite-new-user', ['exports'], function (exports)
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -12343,7 +12519,7 @@ define('ghost/templates/modals/invite-new-user', ['exports'], function (exports)
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -12391,7 +12567,7 @@ define('ghost/templates/modals/leave-editor', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -12438,7 +12614,7 @@ define('ghost/templates/modals/leave-editor', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -12486,7 +12662,7 @@ define('ghost/templates/modals/markdown', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -12876,7 +13052,7 @@ define('ghost/templates/modals/markdown', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -12924,7 +13100,7 @@ define('ghost/templates/modals/signin', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -12997,7 +13173,7 @@ define('ghost/templates/modals/signin', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -13045,7 +13221,7 @@ define('ghost/templates/modals/transfer-owner', ['exports'], function (exports) 
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -13086,7 +13262,7 @@ define('ghost/templates/modals/transfer-owner', ['exports'], function (exports) 
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -13134,7 +13310,7 @@ define('ghost/templates/modals/upload', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -13198,7 +13374,7 @@ define('ghost/templates/modals/upload', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -13247,7 +13423,113 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
+          blockParams: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          build: function build(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("                ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            dom.setAttribute(el1,"class","post-view-link");
+            dom.setAttribute(el1,"target","_blank");
+            var el2 = dom.createTextNode("\n                    View post ");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("i");
+            dom.setAttribute(el2,"class","icon-external");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createTextNode("\n                ");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          render: function render(context, env, contextualElement) {
+            var dom = env.dom;
+            var hooks = env.hooks, get = hooks.get, concat = hooks.concat, attribute = hooks.attribute;
+            dom.detectNamespace(contextualElement);
+            var fragment;
+            if (env.useFragmentCache && dom.canClone) {
+              if (this.cachedFragment === null) {
+                fragment = this.build(dom);
+                if (this.hasRendered) {
+                  this.cachedFragment = fragment;
+                } else {
+                  this.hasRendered = true;
+                }
+              }
+              if (this.cachedFragment) {
+                fragment = dom.cloneNode(this.cachedFragment, true);
+              }
+            } else {
+              fragment = this.build(dom);
+            }
+            var element6 = dom.childAt(fragment, [1]);
+            var attrMorph0 = dom.createAttrMorph(element6, 'href');
+            attribute(env, attrMorph0, element6, "href", concat(env, [get(env, context, "model.absoluteUrl")]));
+            return fragment;
+          }
+        };
+      }());
+      var child1 = (function() {
+        return {
+          isHTMLBars: true,
+          revision: "Ember@1.11.3",
+          blockParams: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          build: function build(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("                ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            dom.setAttribute(el1,"class","post-view-link");
+            dom.setAttribute(el1,"target","_blank");
+            var el2 = dom.createTextNode("\n                    Preview ");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("i");
+            dom.setAttribute(el2,"class","icon-external");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createTextNode("\n                ");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          render: function render(context, env, contextualElement) {
+            var dom = env.dom;
+            var hooks = env.hooks, get = hooks.get, concat = hooks.concat, attribute = hooks.attribute;
+            dom.detectNamespace(contextualElement);
+            var fragment;
+            if (env.useFragmentCache && dom.canClone) {
+              if (this.cachedFragment === null) {
+                fragment = this.build(dom);
+                if (this.hasRendered) {
+                  this.cachedFragment = fragment;
+                } else {
+                  this.hasRendered = true;
+                }
+              }
+              if (this.cachedFragment) {
+                fragment = dom.cloneNode(this.cachedFragment, true);
+              }
+            } else {
+              fragment = this.build(dom);
+            }
+            var element5 = dom.childAt(fragment, [1]);
+            var attrMorph0 = dom.createAttrMorph(element5, 'href');
+            attribute(env, attrMorph0, element5, "href", concat(env, [get(env, context, "model.previewUrl")]));
+            return fragment;
+          }
+        };
+      }());
+      var child2 = (function() {
+        return {
+          isHTMLBars: true,
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -13316,10 +13598,10 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
           }
         };
       }());
-      var child1 = (function() {
+      var child3 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -13371,11 +13653,11 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
           }
         };
       }());
-      var child2 = (function() {
+      var child4 = (function() {
         var child0 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -13572,7 +13854,7 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -13612,7 +13894,7 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -13667,6 +13949,10 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
           dom.setAttribute(el6,"for","url");
           var el7 = dom.createTextNode("Post URL");
           dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createTextNode("\n");
+          dom.appendChild(el5, el6);
+          var el6 = dom.createComment("");
           dom.appendChild(el5, el6);
           var el6 = dom.createTextNode("\n                ");
           dom.appendChild(el5, el6);
@@ -13825,48 +14111,50 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
           } else {
             fragment = this.build(dom);
           }
-          var element5 = dom.childAt(fragment, [0]);
-          var element6 = dom.childAt(element5, [1]);
-          var element7 = dom.childAt(element6, [1, 3]);
-          var element8 = dom.childAt(element6, [3]);
-          var element9 = dom.childAt(element8, [3]);
-          var element10 = dom.childAt(element9, [1]);
-          var element11 = dom.childAt(element9, [9]);
+          var element7 = dom.childAt(fragment, [0]);
+          var element8 = dom.childAt(element7, [1]);
+          var element9 = dom.childAt(element8, [1, 3]);
+          var element10 = dom.childAt(element8, [3]);
+          var element11 = dom.childAt(element10, [3]);
           var element12 = dom.childAt(element11, [1]);
-          var element13 = dom.childAt(element11, [3]);
-          var element14 = dom.childAt(element5, [3]);
-          var attrMorph0 = dom.createAttrMorph(element6, 'class');
-          var morph0 = dom.createMorphAt(element8,1,1);
-          var morph1 = dom.createMorphAt(dom.childAt(element10, [3]),1,1);
-          var morph2 = dom.createMorphAt(element10,5,5);
-          var morph3 = dom.createMorphAt(dom.childAt(element9, [3, 3]),1,1);
-          var morph4 = dom.createMorphAt(element9,5,5);
-          var morph5 = dom.createMorphAt(dom.childAt(element9, [7]),1,1);
-          var morph6 = dom.createMorphAt(element12,1,1);
-          var morph7 = dom.createMorphAt(element13,1,1);
-          var morph8 = dom.createMorphAt(element14,1,1);
-          var attrMorph1 = dom.createAttrMorph(element14, 'class');
-          attribute(env, attrMorph0, element6, "class", concat(env, [subexpr(env, context, "if", [get(env, context, "isViewingSubview"), "settings-menu-pane-out-left", "settings-menu-pane-in"], {}), " settings-menu settings-menu-pane"]));
-          element(env, element7, context, "action", ["closeSettingsMenu"], {});
+          var element13 = dom.childAt(element11, [9]);
+          var element14 = dom.childAt(element13, [1]);
+          var element15 = dom.childAt(element13, [3]);
+          var element16 = dom.childAt(element7, [3]);
+          var attrMorph0 = dom.createAttrMorph(element8, 'class');
+          var morph0 = dom.createMorphAt(element10,1,1);
+          var morph1 = dom.createMorphAt(element12,3,3);
+          var morph2 = dom.createMorphAt(dom.childAt(element12, [5]),1,1);
+          var morph3 = dom.createMorphAt(element12,7,7);
+          var morph4 = dom.createMorphAt(dom.childAt(element11, [3, 3]),1,1);
+          var morph5 = dom.createMorphAt(element11,5,5);
+          var morph6 = dom.createMorphAt(dom.childAt(element11, [7]),1,1);
+          var morph7 = dom.createMorphAt(element14,1,1);
+          var morph8 = dom.createMorphAt(element15,1,1);
+          var morph9 = dom.createMorphAt(element16,1,1);
+          var attrMorph1 = dom.createAttrMorph(element16, 'class');
+          attribute(env, attrMorph0, element8, "class", concat(env, [subexpr(env, context, "if", [get(env, context, "isViewingSubview"), "settings-menu-pane-out-left", "settings-menu-pane-in"], {}), " settings-menu settings-menu-pane"]));
+          element(env, element9, context, "action", ["closeSettingsMenu"], {});
           inline(env, morph0, context, "gh-uploader", [], {"uploaded": "setCoverImage", "canceled": "clearCoverImage", "description": "Add post image", "image": get(env, context, "model.image"), "uploaderReference": get(env, context, "uploaderReference"), "tagName": "section"});
-          inline(env, morph1, context, "gh-input", [], {"class": "post-setting-slug", "id": "url", "value": get(env, context, "slugValue"), "name": "post-setting-slug", "focus-out": "updateSlug", "selectOnClick": "true", "stopEnterKeyDownPropagation": "true"});
-          inline(env, morph2, context, "gh-url-preview", [], {"slug": get(env, context, "slugValue"), "tagName": "p", "classNames": "description"});
-          inline(env, morph3, context, "gh-input", [], {"class": "post-setting-date", "id": "post-setting-date", "value": get(env, context, "publishedAtValue"), "name": "post-setting-date", "focus-out": "setPublishedAt", "stopEnterKeyDownPropagation": "true"});
-          block(env, morph4, context, "unless", [get(env, context, "session.user.isAuthor")], {}, child0, null);
-          block(env, morph5, context, "gh-tab", [], {"tagName": "li", "classNames": "nav-list-item"}, child1, null);
-          element(env, element12, context, "action", ["togglePage"], {"bubbles": "false"});
-          inline(env, morph6, context, "input", [], {"type": "checkbox", "name": "static-page", "id": "static-page", "class": "post-setting-static-page", "checked": get(env, context, "model.page")});
-          element(env, element13, context, "action", ["toggleFeatured"], {"bubbles": "false"});
-          inline(env, morph7, context, "input", [], {"type": "checkbox", "name": "featured", "id": "featured", "class": "post-setting-featured", "checked": get(env, context, "model.featured")});
-          attribute(env, attrMorph1, element14, "class", concat(env, [subexpr(env, context, "if", [get(env, context, "isViewingSubview"), "settings-menu-pane-in", "settings-menu-pane-out-right"], {}), " settings-menu settings-menu-pane"]));
-          block(env, morph8, context, "gh-tab-pane", [], {}, child2, null);
+          block(env, morph1, context, "if", [get(env, context, "model.isPublished")], {}, child0, child1);
+          inline(env, morph2, context, "gh-input", [], {"class": "post-setting-slug", "id": "url", "value": get(env, context, "slugValue"), "name": "post-setting-slug", "focus-out": "updateSlug", "selectOnClick": "true", "stopEnterKeyDownPropagation": "true"});
+          inline(env, morph3, context, "gh-url-preview", [], {"slug": get(env, context, "slugValue"), "tagName": "p", "classNames": "description"});
+          inline(env, morph4, context, "gh-input", [], {"class": "post-setting-date", "id": "post-setting-date", "value": get(env, context, "publishedAtValue"), "name": "post-setting-date", "focus-out": "setPublishedAt", "stopEnterKeyDownPropagation": "true"});
+          block(env, morph5, context, "unless", [get(env, context, "session.user.isAuthor")], {}, child2, null);
+          block(env, morph6, context, "gh-tab", [], {"tagName": "li", "classNames": "nav-list-item"}, child3, null);
+          element(env, element14, context, "action", ["togglePage"], {"bubbles": "false"});
+          inline(env, morph7, context, "input", [], {"type": "checkbox", "name": "static-page", "id": "static-page", "class": "post-setting-static-page", "checked": get(env, context, "model.page")});
+          element(env, element15, context, "action", ["toggleFeatured"], {"bubbles": "false"});
+          inline(env, morph8, context, "input", [], {"type": "checkbox", "name": "featured", "id": "featured", "class": "post-setting-featured", "checked": get(env, context, "model.featured")});
+          attribute(env, attrMorph1, element16, "class", concat(env, [subexpr(env, context, "if", [get(env, context, "isViewingSubview"), "settings-menu-pane-in", "settings-menu-pane-out-right"], {}), " settings-menu settings-menu-pane"]));
+          block(env, morph9, context, "gh-tab-pane", [], {}, child4, null);
           return fragment;
         }
       };
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -13901,10 +14189,10 @@ define('ghost/templates/post-settings-menu', ['exports'], function (exports) {
         } else {
           fragment = this.build(dom);
         }
-        var element15 = dom.childAt(fragment, [0]);
+        var element17 = dom.childAt(fragment, [0]);
         var morph0 = dom.createMorphAt(fragment,2,2,contextualElement);
         dom.insertBoundary(fragment, null);
-        element(env, element15, context, "action", ["closeSettingsMenu"], {});
+        element(env, element17, context, "action", ["closeSettingsMenu"], {});
         block(env, morph0, context, "gh-tabs-manager", [], {"selected": "showSubview", "id": "entry-controls", "class": "settings-menu-container"}, child0, null);
         return fragment;
       }
@@ -13920,7 +14208,7 @@ define('ghost/templates/post-tags-input', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -13969,7 +14257,7 @@ define('ghost/templates/post-tags-input', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -14014,7 +14302,7 @@ define('ghost/templates/post-tags-input', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14054,7 +14342,7 @@ define('ghost/templates/post-tags-input', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -14176,7 +14464,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14219,7 +14507,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
             var child0 = (function() {
               return {
                 isHTMLBars: true,
-                revision: "Ember@1.11.1",
+                revision: "Ember@1.11.3",
                 blockParams: 0,
                 cachedFragment: null,
                 hasRendered: false,
@@ -14262,7 +14550,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
             var child1 = (function() {
               return {
                 isHTMLBars: true,
-                revision: "Ember@1.11.1",
+                revision: "Ember@1.11.3",
                 blockParams: 0,
                 cachedFragment: null,
                 hasRendered: false,
@@ -14314,7 +14602,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
             }());
             return {
               isHTMLBars: true,
-              revision: "Ember@1.11.1",
+              revision: "Ember@1.11.3",
               blockParams: 0,
               cachedFragment: null,
               hasRendered: false,
@@ -14355,7 +14643,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
           var child1 = (function() {
             return {
               isHTMLBars: true,
-              revision: "Ember@1.11.1",
+              revision: "Ember@1.11.3",
               blockParams: 0,
               cachedFragment: null,
               hasRendered: false,
@@ -14397,7 +14685,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
           }());
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -14491,7 +14779,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -14531,7 +14819,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14580,7 +14868,7 @@ define('ghost/templates/posts', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -14713,7 +15001,7 @@ define('ghost/templates/posts/index', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -14753,7 +15041,7 @@ define('ghost/templates/posts/index', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14806,7 +15094,7 @@ define('ghost/templates/posts/index', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -14854,7 +15142,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14890,7 +15178,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14938,7 +15226,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -14974,7 +15262,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child3 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15015,7 +15303,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child4 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15056,7 +15344,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child5 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15092,7 +15380,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     var child6 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15150,7 +15438,7 @@ define('ghost/templates/posts/post', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -15286,7 +15574,7 @@ define('ghost/templates/reset', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -15384,7 +15672,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15427,7 +15715,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15470,7 +15758,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15513,7 +15801,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child3 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15556,7 +15844,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child4 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15599,7 +15887,50 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     var child5 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
+        blockParams: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        build: function build(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("                ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        render: function render(context, env, contextualElement) {
+          var dom = env.dom;
+          var hooks = env.hooks, inline = hooks.inline;
+          dom.detectNamespace(contextualElement);
+          var fragment;
+          if (env.useFragmentCache && dom.canClone) {
+            if (this.cachedFragment === null) {
+              fragment = this.build(dom);
+              if (this.hasRendered) {
+                this.cachedFragment = fragment;
+              } else {
+                this.hasRendered = true;
+              }
+            }
+            if (this.cachedFragment) {
+              fragment = dom.cloneNode(this.cachedFragment, true);
+            }
+          } else {
+            fragment = this.build(dom);
+          }
+          var morph0 = dom.createMorphAt(fragment,1,1,contextualElement);
+          inline(env, morph0, context, "gh-activating-list-item", [], {"route": "settings.pass-protect", "title": "Password Protection", "classNames": "settings-nav-pass icon-lock"});
+          return fragment;
+        }
+      };
+    }());
+    var child6 = (function() {
+      return {
+        isHTMLBars: true,
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15639,10 +15970,10 @@ define('ghost/templates/settings', ['exports'], function (exports) {
         }
       };
     }());
-    var child6 = (function() {
+    var child7 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15684,7 +16015,7 @@ define('ghost/templates/settings', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -15724,6 +16055,10 @@ define('ghost/templates/settings', ['exports'], function (exports) {
         dom.appendChild(el2, el3);
         var el3 = dom.createElement("ul");
         var el4 = dom.createTextNode("\n\n");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createComment("");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n");
         dom.appendChild(el3, el4);
         var el4 = dom.createComment("");
         dom.appendChild(el3, el4);
@@ -15798,16 +16133,18 @@ define('ghost/templates/settings', ['exports'], function (exports) {
         var morph4 = dom.createMorphAt(element2,9,9);
         var morph5 = dom.createMorphAt(element2,11,11);
         var morph6 = dom.createMorphAt(element2,13,13);
-        var morph7 = dom.createMorphAt(element1,3,3);
+        var morph7 = dom.createMorphAt(element2,15,15);
+        var morph8 = dom.createMorphAt(element1,3,3);
         element(env, element0, context, "action", ["toggleGlobalMobileNav"], {});
         block(env, morph0, context, "if", [get(env, context, "showGeneral")], {}, child0, null);
         block(env, morph1, context, "if", [get(env, context, "showUsers")], {}, child1, null);
         block(env, morph2, context, "if", [get(env, context, "showTags")], {}, child2, null);
         block(env, morph3, context, "if", [get(env, context, "showNavigation")], {}, child3, null);
         block(env, morph4, context, "if", [get(env, context, "showCodeInjection")], {}, child4, null);
-        block(env, morph5, context, "if", [get(env, context, "showLabs")], {}, child5, null);
-        block(env, morph6, context, "if", [get(env, context, "showAbout")], {}, child6, null);
-        content(env, morph7, context, "outlet");
+        block(env, morph5, context, "if", [get(env, context, "showPassProtection")], {}, child5, null);
+        block(env, morph6, context, "if", [get(env, context, "showLabs")], {}, child6, null);
+        block(env, morph7, context, "if", [get(env, context, "showAbout")], {}, child7, null);
+        content(env, morph8, context, "outlet");
         return fragment;
       }
     };
@@ -15822,7 +16159,7 @@ define('ghost/templates/settings/about', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15858,7 +16195,7 @@ define('ghost/templates/settings/about', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15899,7 +16236,7 @@ define('ghost/templates/settings/about', ['exports'], function (exports) {
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -15934,7 +16271,7 @@ define('ghost/templates/settings/about', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -16226,7 +16563,7 @@ define('ghost/templates/settings/apps', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16263,7 +16600,7 @@ define('ghost/templates/settings/apps', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -16310,7 +16647,7 @@ define('ghost/templates/settings/apps', ['exports'], function (exports) {
       var child1 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -16351,7 +16688,7 @@ define('ghost/templates/settings/apps', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16429,7 +16766,7 @@ define('ghost/templates/settings/apps', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -16535,7 +16872,7 @@ define('ghost/templates/settings/code-injection', ['exports'], function (exports
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16570,7 +16907,7 @@ define('ghost/templates/settings/code-injection', ['exports'], function (exports
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -16742,7 +17079,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16778,7 +17115,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16826,7 +17163,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16873,7 +17210,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     var child3 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16921,7 +17258,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     var child4 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -16967,7 +17304,7 @@ define('ghost/templates/settings/general', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -17314,7 +17651,7 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17350,7 +17687,7 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17424,7 +17761,7 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -17585,6 +17922,65 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
         var el3 = dom.createTextNode("\n    ");
         dom.appendChild(el2, el3);
         dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("hr");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("form");
+        var el3 = dom.createTextNode("\n        ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("fieldset");
+        var el4 = dom.createTextNode("\n            ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("div");
+        dom.setAttribute(el4,"class","form-group for-checkbox");
+        var el5 = dom.createTextNode("\n                ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("label");
+        dom.setAttribute(el5,"for","labs-passProtectUI");
+        var el6 = dom.createTextNode("Password Protection");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n                ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("label");
+        dom.setAttribute(el5,"class","checkbox");
+        dom.setAttribute(el5,"for","labs-passProtectUI");
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("span");
+        dom.setAttribute(el6,"class","input-toggle-component");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("p");
+        var el7 = dom.createTextNode("Enable the password protection interface");
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                ");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n                ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("p");
+        var el6 = dom.createTextNode("A settings screen which enables you to add password protection to the front of your blog (work in progress)");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n            ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n        ");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
         var el2 = dom.createTextNode("\n\n");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
@@ -17594,7 +17990,7 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
       },
       render: function render(context, env, contextualElement) {
         var dom = env.dom;
-        var hooks = env.hooks, block = hooks.block, element = hooks.element;
+        var hooks = env.hooks, block = hooks.block, element = hooks.element, get = hooks.get, inline = hooks.inline;
         dom.detectNamespace(contextualElement);
         var fragment;
         if (env.useFragmentCache && dom.canClone) {
@@ -17618,11 +18014,13 @@ define('ghost/templates/settings/labs', ['exports'], function (exports) {
         var element4 = dom.childAt(element1, [9, 1, 1, 3]);
         var morph0 = dom.createMorphAt(dom.childAt(fragment, [0]),1,1);
         var morph1 = dom.createMorphAt(element1,5,5);
+        var morph2 = dom.createMorphAt(dom.childAt(element1, [13, 1, 1, 3]),1,1);
         block(env, morph0, context, "link-to", ["settings"], {"class": "btn btn-default btn-back"}, child0, null);
         element(env, element2, context, "action", ["exportData"], {});
         block(env, morph1, context, "gh-form", [], {"id": "settings-import", "enctype": "multipart/form-data"}, child1, null);
         element(env, element3, context, "action", ["openModal", "deleteAll"], {});
         element(env, element4, context, "action", ["sendTestEmail"], {});
+        inline(env, morph2, context, "input", [], {"id": "labs-passProtectUI", "name": "labs[passProtectUI]", "type": "checkbox", "checked": get(env, context, "usePassProtectUI")});
         return fragment;
       }
     };
@@ -17637,7 +18035,7 @@ define('ghost/templates/settings/navigation', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17673,7 +18071,7 @@ define('ghost/templates/settings/navigation', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17715,7 +18113,7 @@ define('ghost/templates/settings/navigation', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -17809,7 +18207,7 @@ define('ghost/templates/settings/navigation', ['exports'], function (exports) {
   }()));
 
 });
-define('ghost/templates/settings/tags', ['exports'], function (exports) {
+define('ghost/templates/settings/pass-protect', ['exports'], function (exports) {
 
   'use strict';
 
@@ -17817,7 +18215,7 @@ define('ghost/templates/settings/tags', ['exports'], function (exports) {
     var child0 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17853,7 +18251,245 @@ define('ghost/templates/settings/tags', ['exports'], function (exports) {
     var child1 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
+        blockParams: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        build: function build(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("            ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createElement("div");
+          dom.setAttribute(el1,"class","form-group");
+          var el2 = dom.createTextNode("\n                ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n                ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createElement("p");
+          var el3 = dom.createTextNode("This password will be needed to access your blog. All search engine optimization and social features are now disabled.");
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n            ");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        render: function render(context, env, contextualElement) {
+          var dom = env.dom;
+          var hooks = env.hooks, get = hooks.get, inline = hooks.inline;
+          dom.detectNamespace(contextualElement);
+          var fragment;
+          if (env.useFragmentCache && dom.canClone) {
+            if (this.cachedFragment === null) {
+              fragment = this.build(dom);
+              if (this.hasRendered) {
+                this.cachedFragment = fragment;
+              } else {
+                this.hasRendered = true;
+              }
+            }
+            if (this.cachedFragment) {
+              fragment = dom.cloneNode(this.cachedFragment, true);
+            }
+          } else {
+            fragment = this.build(dom);
+          }
+          var morph0 = dom.createMorphAt(dom.childAt(fragment, [1]),1,1);
+          inline(env, morph0, context, "input", [], {"name": "private[password]", "type": "text", "value": get(env, context, "model.password")});
+          return fragment;
+        }
+      };
+    }());
+    return {
+      isHTMLBars: true,
+      revision: "Ember@1.11.3",
+      blockParams: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      build: function build(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("header");
+        dom.setAttribute(el1,"class","settings-view-header");
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("h2");
+        dom.setAttribute(el2,"class","page-title");
+        var el3 = dom.createTextNode("Password protect your blog");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n    ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("section");
+        dom.setAttribute(el2,"class","page-actions");
+        var el3 = dom.createTextNode("\n        ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("button");
+        dom.setAttribute(el3,"type","button");
+        dom.setAttribute(el3,"class","btn btn-blue");
+        var el4 = dom.createTextNode("Save");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("section");
+        dom.setAttribute(el1,"class","content settings-pass");
+        var el2 = dom.createTextNode("\n	");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("form");
+        dom.setAttribute(el2,"id","settings-pass");
+        dom.setAttribute(el2,"novalidate","novalidate");
+        var el3 = dom.createTextNode("\n		");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("fieldset");
+        var el4 = dom.createTextNode("\n            ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("div");
+        dom.setAttribute(el4,"class","form-group for-checkbox");
+        var el5 = dom.createTextNode("\n                ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("label");
+        dom.setAttribute(el5,"for","blog-isPrivate");
+        var el6 = dom.createTextNode("Make this blog private");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n                ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("label");
+        dom.setAttribute(el5,"class","checkbox");
+        dom.setAttribute(el5,"for","blog-isPrivate");
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("span");
+        dom.setAttribute(el6,"class","input-toggle-component");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                    ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("p");
+        var el7 = dom.createTextNode("Enable password protection");
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n                ");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n            ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createComment("");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("		");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n	");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      render: function render(context, env, contextualElement) {
+        var dom = env.dom;
+        var hooks = env.hooks, block = hooks.block, element = hooks.element, get = hooks.get, inline = hooks.inline;
+        dom.detectNamespace(contextualElement);
+        var fragment;
+        if (env.useFragmentCache && dom.canClone) {
+          if (this.cachedFragment === null) {
+            fragment = this.build(dom);
+            if (this.hasRendered) {
+              this.cachedFragment = fragment;
+            } else {
+              this.hasRendered = true;
+            }
+          }
+          if (this.cachedFragment) {
+            fragment = dom.cloneNode(this.cachedFragment, true);
+          }
+        } else {
+          fragment = this.build(dom);
+        }
+        var element0 = dom.childAt(fragment, [0]);
+        var element1 = dom.childAt(element0, [5, 1]);
+        var element2 = dom.childAt(fragment, [2, 1, 1]);
+        var morph0 = dom.createMorphAt(element0,1,1);
+        var morph1 = dom.createMorphAt(dom.childAt(element2, [1, 3]),1,1);
+        var morph2 = dom.createMorphAt(element2,3,3);
+        block(env, morph0, context, "link-to", ["settings"], {"class": "btn btn-default btn-back"}, child0, null);
+        element(env, element1, context, "action", ["save"], {});
+        inline(env, morph1, context, "input", [], {"id": "blog-isPrivate", "name": "labs[passProtectUI]", "type": "checkbox", "checked": get(env, context, "model.isPrivate")});
+        block(env, morph2, context, "if", [get(env, context, "model.isPrivate")], {}, child1, null);
+        return fragment;
+      }
+    };
+  }()));
+
+});
+define('ghost/templates/settings/tags', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        isHTMLBars: true,
+        revision: "Ember@1.11.3",
+        blockParams: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        build: function build(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("Back");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        render: function render(context, env, contextualElement) {
+          var dom = env.dom;
+          dom.detectNamespace(contextualElement);
+          var fragment;
+          if (env.useFragmentCache && dom.canClone) {
+            if (this.cachedFragment === null) {
+              fragment = this.build(dom);
+              if (this.hasRendered) {
+                this.cachedFragment = fragment;
+              } else {
+                this.hasRendered = true;
+              }
+            }
+            if (this.cachedFragment) {
+              fragment = dom.cloneNode(this.cachedFragment, true);
+            }
+          } else {
+            fragment = this.build(dom);
+          }
+          return fragment;
+        }
+      };
+    }());
+    var child1 = (function() {
+      return {
+        isHTMLBars: true,
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -17943,7 +18579,7 @@ define('ghost/templates/settings/tags', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -18035,7 +18671,7 @@ define('ghost/templates/settings/tags/settings-menu', ['exports'], function (exp
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -18090,7 +18726,7 @@ define('ghost/templates/settings/tags/settings-menu', ['exports'], function (exp
       var child1 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -18137,7 +18773,7 @@ define('ghost/templates/settings/tags/settings-menu', ['exports'], function (exp
       var child2 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -18334,7 +18970,7 @@ define('ghost/templates/settings/tags/settings-menu', ['exports'], function (exp
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -18527,7 +19163,7 @@ define('ghost/templates/settings/tags/settings-menu', ['exports'], function (exp
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -18580,7 +19216,7 @@ define('ghost/templates/settings/users', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -18631,7 +19267,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         var child0 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -18666,7 +19302,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -18710,7 +19346,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         var child0 = (function() {
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -18745,7 +19381,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -18790,7 +19426,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
           var child0 = (function() {
             return {
               isHTMLBars: true,
-              revision: "Ember@1.11.1",
+              revision: "Ember@1.11.3",
               blockParams: 0,
               cachedFragment: null,
               hasRendered: false,
@@ -18833,7 +19469,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
           var child1 = (function() {
             return {
               isHTMLBars: true,
-              revision: "Ember@1.11.1",
+              revision: "Ember@1.11.3",
               blockParams: 0,
               cachedFragment: null,
               hasRendered: false,
@@ -18880,7 +19516,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
           }());
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -18984,7 +19620,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -19044,7 +19680,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
             var child0 = (function() {
               return {
                 isHTMLBars: true,
-                revision: "Ember@1.11.1",
+                revision: "Ember@1.11.3",
                 blockParams: 0,
                 cachedFragment: null,
                 hasRendered: false,
@@ -19091,7 +19727,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
             }());
             return {
               isHTMLBars: true,
-              revision: "Ember@1.11.1",
+              revision: "Ember@1.11.3",
               blockParams: 0,
               cachedFragment: null,
               hasRendered: false,
@@ -19131,7 +19767,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
           }());
           return {
             isHTMLBars: true,
-            revision: "Ember@1.11.1",
+            revision: "Ember@1.11.3",
             blockParams: 0,
             cachedFragment: null,
             hasRendered: false,
@@ -19237,7 +19873,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
         }());
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -19277,7 +19913,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -19384,7 +20020,7 @@ define('ghost/templates/settings/users/index', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -19433,7 +20069,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -19471,7 +20107,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -19515,7 +20151,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
       var child0 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -19563,7 +20199,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
       var child1 = (function() {
         return {
           isHTMLBars: true,
-          revision: "Ember@1.11.1",
+          revision: "Ember@1.11.3",
           blockParams: 0,
           cachedFragment: null,
           hasRendered: false,
@@ -19605,7 +20241,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
       }());
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -19660,7 +20296,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
     var child2 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -19723,7 +20359,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
     var child3 = (function() {
       return {
         isHTMLBars: true,
-        revision: "Ember@1.11.1",
+        revision: "Ember@1.11.3",
         blockParams: 0,
         cachedFragment: null,
         hasRendered: false,
@@ -19779,7 +20415,7 @@ define('ghost/templates/settings/users/user', ['exports'], function (exports) {
     }());
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -20222,7 +20858,7 @@ define('ghost/templates/setup', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -20442,7 +21078,7 @@ define('ghost/templates/signin', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -20570,7 +21206,7 @@ define('ghost/templates/signup', ['exports'], function (exports) {
   exports['default'] = Ember.HTMLBars.template((function() {
     return {
       isHTMLBars: true,
-      revision: "Ember@1.11.1",
+      revision: "Ember@1.11.3",
       blockParams: 0,
       cachedFragment: null,
       hasRendered: false,
@@ -20759,16 +21395,16 @@ define('ghost/templates/signup', ['exports'], function (exports) {
 });
 define('ghost/tests/helpers/resolver', ['exports', 'ember/resolver', 'ghost/config/environment'], function (exports, Resolver, config) {
 
-  'use strict';
+    'use strict';
 
-  var resolver = Resolver['default'].create();
+    var resolver = Resolver['default'].create();
 
-  resolver.namespace = {
-    modulePrefix: config['default'].modulePrefix,
-    podModulePrefix: config['default'].podModulePrefix
-  };
+    resolver.namespace = {
+        modulePrefix: config['default'].modulePrefix,
+        podModulePrefix: config['default'].podModulePrefix
+    };
 
-  exports['default'] = resolver;
+    exports['default'] = resolver;
 
 });
 define('ghost/tests/helpers/start-app', ['exports', 'ember', 'ghost/app', 'ghost/router', 'ghost/config/environment'], function (exports, Ember, Application, Router, config) {
@@ -22197,6 +22833,8 @@ define('ghost/utils/config-parser', ['exports'], function (exports) {
             return false;
         } else if (isNumeric(val)) {
             return +val;
+        } else if (val.indexOf("{") === 0) {
+            return JSON.parse(val);
         } else {
             return val;
         }
@@ -22812,9 +23450,14 @@ define('ghost/utils/word-count', ['exports'], function (exports) {
     'use strict';
 
     // jscs: disable
+    /* global XRegExp */
+
     function wordCount(s) {
+
+        var nonANumLetters = new XRegExp("[^\\s\\d\\p{L}]", "g"); // all non-alphanumeric letters regexp
+
         s = s.replace(/<(.|\n)*?>/g, " "); // strip tags
-        s = s.replace(/[^\w\s]/g, ""); // ignore non-alphanumeric letters
+        s = s.replace(nonANumLetters, ""); // ignore non-alphanumeric letters
         s = s.replace(/(^\s*)|(\s*$)/gi, ""); // exclude starting and ending white-space
         s = s.replace(/\n /gi, " "); // convert newlines to spaces
         s = s.replace(/\n+/gi, " ");
@@ -23233,7 +23876,11 @@ define('ghost/views/content-preview-content-view', ['exports', 'ember', 'ghost/u
         },
 
         contentObserver: (function () {
-            this.$().closest(".content-preview").scrollTop(0);
+            var el = this.$();
+
+            if (el) {
+                el.closest(".content-preview").scrollTop(0);
+            }
         }).observes("controller.content"),
 
         willDestroyElement: function willDestroyElement() {
@@ -23259,7 +23906,7 @@ define('ghost/views/editor-save-button', ['exports', 'ember'], function (exports
             return this.get("controller.model.isPublished") !== this.get("controller.willPublish");
         }),
 
-        publishText: Ember['default'].computed("controller.model.isPublished", "controller.pageOrPost", function () {
+        publishText: Ember['default'].computed("controller.model.isPublished", "controller.postOrPage", function () {
             return this.get("controller.model.isPublished") ? "Update " + this.get("controller.postOrPage") : "Publish Now";
         }),
 
@@ -23271,7 +23918,7 @@ define('ghost/views/editor-save-button', ['exports', 'ember'], function (exports
             return "Delete " + this.get("controller.postOrPage");
         }),
 
-        saveText: Ember['default'].computed("controller.willPublish", function () {
+        saveText: Ember['default'].computed("controller.willPublish", "publishText", "draftText", function () {
             return this.get("controller.willPublish") ? this.get("publishText") : this.get("draftText");
         })
     });
@@ -23772,6 +24419,15 @@ define('ghost/views/settings/navigation', ['exports', 'ember', 'ghost/views/sett
     exports['default'] = SettingsNavigationView;
 
 });
+define('ghost/views/settings/pass-protect', ['exports', 'ghost/views/settings/content-base'], function (exports, BaseView) {
+
+	'use strict';
+
+	var SettingsGeneralView = BaseView['default'].extend();
+
+	exports['default'] = SettingsGeneralView;
+
+});
 define('ghost/views/settings/tags', ['exports', 'ghost/views/settings/content-base', 'ghost/mixins/pagination-view-infinite-scroll'], function (exports, BaseView, PaginationScrollMixin) {
 
 	'use strict';
@@ -23889,7 +24545,7 @@ catch(err) {
 if (runningTests) {
   require("ghost/tests/test-helper");
 } else {
-  require("ghost/app")["default"].create({"LOG_ACTIVE_GENERATION":true,"LOG_TRANSITIONS":true,"LOG_TRANSITIONS_INTERNAL":true,"LOG_VIEW_LOOKUPS":true,"name":"ghost","version":"0.6.0"});
+  require("ghost/app")["default"].create({"LOG_ACTIVE_GENERATION":true,"LOG_TRANSITIONS":true,"LOG_TRANSITIONS_INTERNAL":true,"LOG_VIEW_LOOKUPS":true,"name":"ghost","version":"0.0.0.4dd3c14f"});
 }
 
 /* jshint ignore:end */

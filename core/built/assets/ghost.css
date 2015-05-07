@@ -4294,6 +4294,14 @@ body.zen {
   left: auto;
   right: 100%; }
 
+.post-view-link {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  font-size: 1.3rem; }
+  .post-view-link i {
+    font-size: 10px; }
+
 .seo-preview {
   font-family: Arial, sans-serif; }
 
@@ -4695,6 +4703,10 @@ body.zen {
   .settings-code-editor.focused {
     border-color: #aaa9a2;
     outline: 0; }
+  .settings-code-editor .CodeMirror {
+    border-radius: inherit; }
+  .settings-code-editor .cm-s-xq-light span.cm-meta {
+    color: #000; }
 
 .users-list-wrapper {
   overflow: auto;
