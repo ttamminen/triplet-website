@@ -19,6 +19,9 @@
             <div class="blog-post-body">                    
                 {{content}}
                 <a class="back" href="/blog"><img width="32" height="32" src="{{asset "images/back.svg"}}" />Back to the article list</a>
+                
+                <h5 class="share-caption">Share</h5>
+                <a href="https://twitter.com/intent/tweet?text={{encode title}}&url={{url absolute="true"}}" class="webicon twitter"></a>
             </div>
             <div class="blog-post-author">
                 <p class="blog-post-author-caption">About Tatu</p>
