@@ -23,7 +23,7 @@
     ],
     "main": "./core/index",
     "scripts": {
-        "start": "node index",
+        "start": "gulp build",
         "test": "grunt validate --verbose"
     },
     "engines": {
