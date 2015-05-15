@@ -63,3 +63,15 @@ a, a:visited, a:active {
 a:hover {
 	color: $link-hover-color;	
 }
+
+tbody:before {
+    /* This doesn't work because of border-collapse */
+    line-height:1em;
+    content:".";
+    color:rgba(0,0,0,0); /* background color */
+    display:block;
+}
+
+th {
+	text-align: left;
+}
