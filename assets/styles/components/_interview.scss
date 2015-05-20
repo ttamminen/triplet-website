@@ -1,0 +1,20 @@
+.question {
+	font-style: italic;
+}
+
+.answer-author {
+  display: none;
+}
+
+@media screen and (min-width: 30em) {
+	.answer-author {
+		display: inline-block;
+	  	width: 62px;
+		height: 80px;
+		float: left;
+		background-size: cover;
+		background-repeat: no-repeat;
+		vertical-align: top;
+		margin-right: 8px;
+	}
+}
