@@ -1,5 +1,10 @@
 .question {
 	font-style: italic;
+	clear: left;
+}
+
+.answer {
+	margin-bottom: 3.5em;	
 }
 
 .answer-author {
@@ -15,6 +20,6 @@
 		background-size: cover;
 		background-repeat: no-repeat;
 		vertical-align: top;
-		margin-right: 8px;
+		margin: 0 1em 0.5em 1em;
 	}
 }
