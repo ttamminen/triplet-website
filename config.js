@@ -1,5 +1,3 @@
-require('./helpers')();
-
 // # Ghost Configuration
 // Setup your Ghost install for various environments
 // Documentation can be found at http://support.ghost.org/config/
@@ -12,7 +10,7 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
-        url: process.env.BLOG_URL,
+        url: process.env.BLOG_URL || 'http://localhost:2368/blog',
 		mail: {
 			transport: 'SMTP',
 			options: {
@@ -33,12 +31,6 @@ config = {
                 port: process.env.POSTGRES_PORT
             }
         },
-		aws: {
-			accessKeyId: process.env.AWS_ACCESS_ID,
-			secretAccessKey: process.env.AWS_ACCESS_SECRET,
-			bucket: process.env.AWS_BUCKET_NAME,
-			region: process.env.AWS_BUCKET_REGION
-		},
         server: {
             // Host to be passed to node's `net.Server#listen()`
             host: '0.0.0.0',
