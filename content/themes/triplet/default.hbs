@@ -40,7 +40,8 @@
 
     {{! Everything else gets inserted here }}
     {{{body}}}
- 
+
+    <script src="{{asset "js/vendor/blazy.js"}}"></script> 
     <script src="{{asset "js/vendor/highlight.pack.js"}}"></script>
     <script src="{{asset "js/vendor/masonry.pkgd.min.js"}}"></script>
     <script src="{{asset "js/vendor/imagesloaded.pkgd.min.js"}}"></script>
@@ -57,6 +58,11 @@
                 });
             });
           });
+    </script>
+    <script>
+        ;(function() {
+            var bLazy = new Blazy();
+        })();
     </script>
     {{! Ghost outputs important scripts and data with this tag }}
     {{ghost_foot}}
