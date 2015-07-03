@@ -10,6 +10,8 @@ var fileinclude = require('gulp-file-include');
 var nodemon = require('gulp-nodemon');
 var server = require( 'gulp-develop-server');
 var postcss = require('gulp-postcss');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
 
 // for the release
 var imagemin = require('gulp-imagemin');
@@ -19,7 +21,7 @@ var minifyCSS = require('gulp-minify-css');
 var themeRoot = 'content/themes/triplet/assets/';
 var assetsRoot = 'assets/';
 
-gulp.task('sass', function() {  
+gulp.task('sass', function() {
   return gulp.src(assetsRoot + 'styles/*.scss')
     .pipe(sass())
     .on('error', function (err) {
@@ -42,11 +44,62 @@ gulp.task('sassmin', function() {
 });
 
 gulp.task('scripts', function () {
-  return gulp.src([assetsRoot + 'js/**/*.js', '!' + assetsRoot + 'js/vendor/**'])
+  // set up the browserify instance on a task basis
+  var b = browserify({
+    entries: assetsRoot + 'js/main.js',
+    debug: true,
+    // defining transforms here will avoid crashing your stream
+    transform: []
+  });
+
+  return b.bundle()
+    .pipe(source('app.js'))
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('jshint-stylish'))
-    .pipe(gulp.dest('dist/js'))
-    .pipe(livereload());
+    .pipe(gulp.dest('./dist/js/'));
+});
+
+gulp.task('javascript', function () {
+  // gulp expects tasks to return a stream, so we create one here.
+  var bundledStream = through();
+
+  bundledStream
+    // turns the output bundle stream into a stream containing
+    // the normal attributes gulp plugins expect.
+    .pipe(source('app.js'))
+    // the rest of the gulp task, as you would normally write it.
+    // here we're copying from the Browserify + Uglify2 recipe.
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+      // Add gulp plugins to the pipeline here.
+      .pipe(uglify())
+      .on('error', gutil.log)
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./dist/js/'));
+
+  // "globby" replaces the normal "gulp.src" as Browserify
+  // creates it's own readable stream.
+  globby(['./entries/*.js'], function(err, entries) {
+    // ensure any errors from globby are handled
+    if (err) {
+      bundledStream.emit('error', err);
+      return;
+    }
+
+    // create the Browserify instance.
+    var b = browserify({
+      entries: entries,
+      debug: true,
+      transform: [reactify]
+    });
+
+    // pipe the Browserify stream into the stream we created earlier
+    // this starts our gulp pipeline.
+    b.bundle().pipe(bundledStream);
+  });
+
+  // finally, we return the stream, so gulp knows when this task is done.
+  return bundledStream;
 });
 
 gulp.task('scriptsmin', function () {
@@ -56,11 +109,6 @@ gulp.task('scriptsmin', function () {
     .pipe(concat('all.min.js'))
     .pipe(uglify())
     .pipe(gulp.dest('dist/js'));
-});
-
-gulp.task('vendorscripts', function () {
-  return gulp.src(assetsRoot + 'js/vendor/*.js')
-    .pipe(gulp.dest('dist/js/vendor/'));
 });
 
 gulp.task('html', function () {
@@ -110,16 +158,16 @@ gulp.task('watch', ['createtheme'], function() {
 
 gulp.task('styleguide', function (next) {
   var fileServer = require('ecstatic')({
-    root: './dist', 
-    cache: 'no-cache', 
-    showDir: true, 
-    gzip: true, 
+    root: './dist',
+    cache: 'no-cache',
+    showDir: true,
+    gzip: true,
     defaultExt: true });
   var port = 8000;
   require('http').createServer()
       .on('request', function (req, res) {
           fileServer(req, res);
-      })    
+      })
       .listen(port, function () {
           gutil.log('Server is listening on ' + gutil.colors.magenta('http://localhost:' + port + '/'));
           next();
@@ -127,32 +175,32 @@ gulp.task('styleguide', function (next) {
 });
 
 gulp.task('ghost', ['createtheme'], function () {
-  nodemon({ 
+  nodemon({
     script: 'index.js',
     env: { 'NODE_ENV': 'production' },
-    ext: 'scss js', 
-    ignore: ['dist/**/*', 'core/**/*', 'content/**/*', 'node_modules/**/*'] 
+    ext: 'scss js',
+    ignore: ['dist/**/*', 'core/**/*', 'content/**/*', 'node_modules/**/*']
   })
-  .on('change', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme'])
+  .on('change', ['sass', 'image', 'font', 'static', 'scripts', 'html', 'createtheme'])
   .on('restart', livereload);
 });
 
-gulp.task('createtheme', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html'], function () {
+gulp.task('createtheme', ['sass', 'image', 'font', 'static', 'scripts', 'html'], function () {
   return gulp.src(['dist/css/**/*.css', 'dist/fonts/**/*.*', 'dist/images/**/*.*', 'dist/js/**/*.js'], { base: './dist'})
     .pipe(gulp.dest(themeRoot));
 });
 
 // run server
 gulp.task( 'server:start', ['createtheme'], function() {
-    server.listen( { path: './index.js' } );
+  server.listen( { path: './index.js' } );
 });
 
 // restart server if app.js changed
 gulp.task( 'server:restart', ['createtheme'], function() {
-    server.restart;
+  server.restart;
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'vendorscripts', 'html', 'createtheme', 'server:start', 'styleguide', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'html', 'createtheme', 'server:start', 'styleguide', 'watch' ]);
 
-gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'vendorscripts', 'html', 'createtheme', 'ghost']);
+gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'html', 'createtheme', 'ghost']);
