@@ -21,6 +21,7 @@
     "express": "^4.13.0",
     "express-hbs": "^0.8.4",
     "ghost": "^0.6.4",
+    "globby": "^2.1.0",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-develop-server": "^0.4.3",
@@ -32,12 +33,16 @@
     "gulp-nodemon": "^2.0.3",
     "gulp-postcss": "^5.1.9",
     "gulp-sass": "^2.0.3",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-streamify": "0.0.5",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
     "imagemin-pngcrush": "^4.1.0",
     "imagesloaded": "^3.1.8",
     "jshint-stylish": "^2.0.1",
     "masonry-layout": "^3.3.1",
+    "through2": "^2.0.0",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
   }
 }

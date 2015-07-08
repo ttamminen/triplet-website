@@ -13,6 +13,12 @@ var postcss = require('gulp-postcss');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 
+var globby = require('globby');
+var through = require('through2');
+var sourcemaps = require('gulp-sourcemaps');
+var buffer = require('vinyl-buffer');
+var streamify = require('gulp-streamify');
+
 // for the release
 var imagemin = require('gulp-imagemin');
 var pngcrush = require('imagemin-pngcrush');
@@ -72,14 +78,14 @@ gulp.task('javascript', function () {
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
       // Add gulp plugins to the pipeline here.
-      .pipe(uglify())
+      .pipe(streamify(uglify()))
       .on('error', gutil.log)
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./dist/js/'));
 
   // "globby" replaces the normal "gulp.src" as Browserify
   // creates it's own readable stream.
-  globby(['./entries/*.js'], function(err, entries) {
+  globby(['./assets/js/*.js'], function(err, entries) {
     // ensure any errors from globby are handled
     if (err) {
       bundledStream.emit('error', err);
@@ -90,7 +96,7 @@ gulp.task('javascript', function () {
     var b = browserify({
       entries: entries,
       debug: true,
-      transform: [reactify]
+      transform: []
     });
 
     // pipe the Browserify stream into the stream we created earlier
@@ -185,7 +191,7 @@ gulp.task('ghost', ['createtheme'], function () {
   .on('restart', livereload);
 });
 
-gulp.task('createtheme', ['sass', 'image', 'font', 'static', 'scripts', 'html'], function () {
+gulp.task('createtheme', ['sass', 'image', 'font', 'static', 'javascript', 'html'], function () {
   return gulp.src(['dist/css/**/*.css', 'dist/fonts/**/*.*', 'dist/images/**/*.*', 'dist/js/**/*.js'], { base: './dist'})
     .pipe(gulp.dest(themeRoot));
 });
@@ -201,6 +207,6 @@ gulp.task( 'server:restart', ['createtheme'], function() {
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'scripts', 'html', 'createtheme', 'server:start', 'styleguide', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'html', 'createtheme', 'server:start', 'styleguide', 'watch' ]);
 
 gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'html', 'createtheme', 'ghost']);
