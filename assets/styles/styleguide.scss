@@ -1,5 +1,9 @@
 @import "variables";
 
+body, .styleguide .page-wrap {
+	background-color: $t3-white;
+}
+
 .styleguide-colors {
 	list-style: none;
 	padding-left: 0;
