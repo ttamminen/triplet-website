@@ -1,0 +1,36 @@
+.call-to-action {
+	min-height: 150px;
+}
+
+@media screen and (min-width: 30em) {
+	.me-and-what-i-do-wrapper {
+		display: flex;
+
+		> .article-highlight {
+			margin-right: 0.75rem;
+		}
+
+		> div {
+			margin-left: 0.75rem;
+		}
+
+		> .article-highlight, > div {
+			flex: 1 50%;
+		}
+	}
+
+	.skills-call-to-action-wrapper {
+		display: flex;
+		flex-direction: column;
+
+		> section {
+			flex: 1 50%;	
+		}
+
+		.call-to-action {
+			display: flex;
+	  		align-items: center;
+	  		justify-content: center;
+		}
+	}	
+}

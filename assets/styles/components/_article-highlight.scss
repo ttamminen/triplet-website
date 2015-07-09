@@ -1,5 +1,4 @@
 %widget {
-	display: inline-block;
 	box-shadow: 0 9px 15px rgba(30, 30, 30, 0.5);
 	@include rem(margin-bottom, 1.5em);
 
@@ -77,15 +76,19 @@
 
 .call-to-action-header {
 	@include rem(font-size, $alpha-font-size);
+	line-height: 1;
 	margin-bottom: 0;
 	font-weight: 200;
-	border-bottom: 2px solid $t3-white;
-	@include rem(padding-bottom, 0.8rem); 
+	border-bottom: 2px solid $t3-white; 
 	display: inline-block;
 	vertical-align: middle;
 
 	a, a:visited {
 		color: $t3-white;
 		text-decoration: none;
-	}	
+	}
+
+	a:hover {
+		color: darken($t3-white, 20%);
+	}
 }
