@@ -1,5 +1,17 @@
-.call-to-action {
-	min-height: 150px;
+.skills-call-to-action-wrapper {
+	display: flex;
+	flex-direction: column;
+
+	> section {
+		flex: 1 50%;	
+	}
+
+	.call-to-action {
+		min-height: 150px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 }
 
 @media screen and (min-width: 30em) {
@@ -17,20 +29,49 @@
 		> .article-highlight, > div {
 			flex: 1 50%;
 		}
-	}
+	}	
+}
 
-	.skills-call-to-action-wrapper {
+@media screen and (min-width: 30em) {
+	.references-wrapper {
 		display: flex;
-		flex-direction: column;
+		flex-flow: row wrap;
 
 		> section {
-			flex: 1 50%;	
+			flex: 1 46%;
+			margin-left: 2%;
 		}
 
-		.call-to-action {
-			display: flex;
-	  		align-items: center;
-	  		justify-content: center;
+		> section:first-child {
+			margin-left: 0;
 		}
-	}	
+
+		> section:last-child {
+			flex: 1 100%;
+			margin-right: 0;
+			margin-left: 0;
+		}
+	}
+}
+
+@media screen and (min-width: 40em) {
+	.references-wrapper {
+		flex-wrap: nowrap;
+
+		> section {
+			flex: 1 32%;
+			margin-left: 0;
+			margin-right: 2%;
+		}
+
+		> section:first-child {
+			flex: 1 32%;
+			margin-left: 0;
+		}
+
+		> section:last-child {
+			flex: 1 32%;
+			margin-right: 0;
+		}
+	}
 }

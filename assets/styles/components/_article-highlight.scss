@@ -36,7 +36,7 @@
 	font-weight: 200;
 }
 
-.highlight-content {	
+.highlight-content {
 	text-align: center;
 	@include rem(margin-left, 1em);
 	@include rem(margin-right, 1em);
@@ -48,6 +48,14 @@
 		@include rem(margin-left, 1.5em);
 		@include rem(margin-right, 1.5em);
 		@include rem(padding-top, 2.625em);
+	}
+}
+
+.highlight-heading-link {
+	@extend %link-with-arrow;
+
+	&:hover:after {
+		transform: rotate(-30deg);
 	}
 }
 

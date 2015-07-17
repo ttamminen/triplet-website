@@ -36,3 +36,13 @@ blockquote span {
 	font-weight: bold;
 	margin-top:1em;
 }
+
+blockquote.plain {
+	padding: 0 0 0 1em;
+	font-size: initial;
+	border-left: 4px solid lighten($blockquote-effect-color,20%);
+
+	&::before {
+		content: '';
+	}	
+}
