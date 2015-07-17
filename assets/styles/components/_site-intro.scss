@@ -4,4 +4,6 @@
 
 .site-intro-image {
 	width: 100%;
+	max-width: 500px;
+	@extend %centered-content;
 }
