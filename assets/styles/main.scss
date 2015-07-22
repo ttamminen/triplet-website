@@ -67,6 +67,11 @@ a:hover {
 	color: $link-hover-color;	
 }
 
+a.emphasized {
+	color: $t3-green;
+	@include eta;
+}
+
 tbody:before {
     /* This doesn't work because of border-collapse */
     line-height:1em;

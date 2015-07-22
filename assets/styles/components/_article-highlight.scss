@@ -37,6 +37,7 @@
 }
 
 .highlight-content {
+	display: inline-block;
 	text-align: center;
 	@include rem(margin-left, 1em);
 	@include rem(margin-right, 1em);
@@ -60,6 +61,7 @@
 }
 
 .highlight-action-link {
+	display: block;
 	@include rem(margin-bottom, 1.5em);	
 }
 

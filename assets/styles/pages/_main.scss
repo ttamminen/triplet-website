@@ -14,6 +14,17 @@
 	}
 }
 
+@media screen and (min-width: 20em) {
+	.skills-and-focus {
+		display: flex;
+		align-items: center;
+
+		.highlight-content {
+			padding-top: 0;
+		}
+	}
+}
+
 @media screen and (min-width: 30em) {
 	.me-and-what-i-do-wrapper {
 		display: flex;
