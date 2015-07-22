@@ -4,7 +4,7 @@ var ghost = require('ghost'),
     path = require('path'),
     parentApp = express();
 
-process.env.PWD = process.cwd();
+console.log(process.cwd());
 
 function processBuffer( buffer, app ){
   while( buffer.length ){
@@ -52,8 +52,6 @@ parentApp.get('/', function (req, res) {
 parentApp.get('/styleguide', function (req, res) {
   res.render('styleguide');
 });
-
-require('./helpers')();
 
 parentApp.use( '/blog', makeGhostMiddleware({
   config: path.join(process.cwd(), 'config.js')
