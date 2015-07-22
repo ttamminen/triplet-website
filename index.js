@@ -35,7 +35,8 @@ function makeGhostMiddleware(options, cb) {
 parentApp.set('port', (process.env.PORT || 2368));
 
 parentApp.engine('hbs', hbs.express4({
-  defaultLayout: path.join(process.cwd(), 'views', 'layouts', 'main.hbs')
+  defaultLayout: path.join(process.cwd(), 'views', 'layouts', 'main.hbs'),
+  layoutsDir: path.join(process.cwd(), 'views', 'layouts')
 }));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
@@ -45,7 +46,8 @@ parentApp.get('/', function (req, res) {
   var description = 'TripleT Softworks - Web Development Consulting';
   res.render('home', {
     description: description,
-    title: description
+    title: description,
+    layout: 'main'
   });
 });
 
