@@ -148,6 +148,6 @@ gulp.task('server:restart', function() {
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'html', 'server:start', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'server:start', 'watch' ]);
 
-gulp.task('build', ['sassmin', 'image', 'font', 'static', 'javascript', 'html', 'site']);
+gulp.task('build', ['sassmin', 'image', 'font', 'static', 'javascript', 'site']);
