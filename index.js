@@ -11,10 +11,12 @@ parentApp.set('view engine', 'hbs');
 parentApp.set('views', __dirname + '/views');
 parentApp.use(express.static(__dirname + '/public'));
 
-console.log(__dirname + '/views/layouts/main.hbs');
-
 parentApp.get('/', function (req, res) {
-  res.render('home');
+  var description = 'TripleT Softworks - Web Development Consulting';
+  res.render('home', {
+    description: description,
+    title: description
+  });
 });
 
 parentApp.get('/styleguide', function (req, res) {
