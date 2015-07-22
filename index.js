@@ -4,12 +4,14 @@ var ghost = require('ghost'),
     path = require('path'),
     parentApp = express();
 
+var root = process.cwd();
+
 parentApp.engine('hbs', hbs.express4({
-  defaultLayout: __dirname + '/views/layouts/main.hbs'
+  defaultLayout: path.join(root, 'views/layouts/main.hbs')
 }));
 parentApp.set('view engine', 'hbs');
-parentApp.set('views', __dirname + '/views');
-parentApp.use(express.static(__dirname + '/public'));
+parentApp.set('views', path.join(root, 'views'));
+parentApp.use(express.static(path.join(root, 'public')));
 
 parentApp.get('/', function (req, res) {
   var description = 'TripleT Softworks - Web Development Consulting';
@@ -24,7 +26,7 @@ parentApp.get('/styleguide', function (req, res) {
 });
 
 ghost({
-  config: path.join(__dirname, 'config.js')
+  config: path.join(root, 'config.js')
 }).then(function (ghostServer) {
   parentApp.use(ghostServer.config.paths.subdir, ghostServer.rootApp);  
   require('./helpers')();
