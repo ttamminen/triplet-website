@@ -3,16 +3,16 @@ var ghost = require('ghost'),
     hbs  = require('express-hbs'),
     parentApp = express();
 
-console.log(__dirname);
+process.env.PWD = process.cwd();
 
 parentApp.set('port', (process.env.PORT || 2368));
 
 parentApp.engine('hbs', hbs.express4({
-  defaultLayout: __dirname + '/views/layouts/main.hbs'
+  defaultLayout: process.env.PWD + '/views/layouts/main.hbs'
 }));
 parentApp.set('view engine', 'hbs');
-parentApp.set('views', __dirname + '/views');
-parentApp.use(express.static(__dirname + '/public'));
+parentApp.set('views', process.env.PWD + '/views');
+parentApp.use(express.static(process.env.PWD + '/public'));
 
 parentApp.get('/', function (req, res) {
   var description = 'TripleT Softworks - Web Development Consulting';
@@ -31,7 +31,7 @@ parentApp.listen(parentApp.get('port'), function() {
 });
 
 ghost({
-  config: __dirname + '/config.js'
+  config: process.env.PWD + '/config.js'
 }).then(function (ghostServer) {
   parentApp.use(ghostServer.config.paths.subdir, ghostServer.rootApp);
   require('./helpers')();
