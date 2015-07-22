@@ -3,6 +3,8 @@ var ghost = require('ghost'),
     hbs  = require('express-hbs'),
     parentApp = express();
 
+console.log(__dirname);
+
 parentApp.set('port', (process.env.PORT || 2368));
 
 parentApp.engine('hbs', hbs.express4({
