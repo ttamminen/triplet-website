@@ -36,7 +36,7 @@ parentApp.set('port', (process.env.PORT || 2368));
 
 parentApp.engine('hbs', hbs.express4({
   //defaultLayout: path.join(process.cwd(), 'views', 'layouts', 'main.hbs'),
-  layoutsDir: path.join(process.cwd(), 'views', 'layouts')
+  //layoutsDir: path.join(process.cwd(), 'views', 'layouts')
 }));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
@@ -47,7 +47,7 @@ parentApp.get('/', function (req, res) {
   res.render('home', {
     description: description,
     title: description,
-    layout: 'main'
+    layout: 'layouts/main'
   });
 });
 
