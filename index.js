@@ -5,7 +5,7 @@ var ghost = require('ghost'),
 
 process.env.PWD = process.cwd();
 
-parentApp.set('port', (process.env.PORT || 2368));
+//parentApp.set('port', (process.env.PORT || 2368));
 
 parentApp.engine('hbs', hbs.express4({
   defaultLayout: process.env.PWD + '/views/layouts/main.hbs'
