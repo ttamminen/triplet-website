@@ -48,22 +48,6 @@ gulp.task('sassmin', function() {
     .pipe(gulp.dest('public/css'));
 });
 
-gulp.task('scripts', function () {
-  // set up the browserify instance on a task basis
-  var b = browserify({
-    entries: assetsRoot + 'js/main.js',
-    debug: true,
-    // defining transforms here will avoid crashing your stream
-    transform: []
-  });
-
-  return b.bundle()
-    .pipe(source('app.js'))
-    .pipe(jshint('.jshintrc'))
-    .pipe(jshint.reporter('jshint-stylish'))
-    .pipe(gulp.dest('./public/js/'));
-});
-
 gulp.task('javascript', function () {
   // gulp expects tasks to return a stream, so we create one here.
   var bundledStream = through();
@@ -107,25 +91,6 @@ gulp.task('javascript', function () {
   return bundledStream;
 });
 
-gulp.task('scriptsmin', function () {
-  return gulp.src([assetsRoot + 'js/bundled_vendor/*.js', assetsRoot + 'js/*.js'])
-    .pipe(jshint('.jshintrc'))
-    .pipe(jshint.reporter('jshint-stylish'))
-    .pipe(concat('all.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('public/js'));
-});
-
-gulp.task('html', function () {
-  return gulp.src(assetsRoot + 'html/*.html')
-    .pipe(fileinclude({
-      prefix: '@@',
-      basepath: '@file'
-    }))
-    .pipe(gulp.dest('public'))
-    .pipe(livereload());
-});
-
 gulp.task('font', function () {
   return gulp.src(assetsRoot + 'fonts/**')
     .pipe(gulp.dest('public/fonts'));
@@ -155,9 +120,9 @@ gulp.task('static', function () {
 // Watch Files For Changes
 gulp.task('watch', function() {
   livereload.listen({ basePath: 'public' });
-  gulp.watch(assetsRoot + 'js/**/*', ['scripts', 'server:restart']);
+  gulp.watch(assetsRoot + 'js/**/*', ['javascript', 'server:restart']);
   gulp.watch(assetsRoot + 'styles/**/*.scss', ['sass', 'server:restart']);
-  gulp.watch(assetsRoot + 'html/**/*.html', ['html', 'sass', 'scripts', 'server:restart']);
+  gulp.watch(assetsRoot + 'html/**/*.html', ['html', 'sass', 'javascript', 'server:restart']);
   gulp.watch(assetsRoot + 'images/**/*', ['image', 'server:restart']);
 });
 
@@ -168,7 +133,7 @@ gulp.task('site', function () {
     ext: 'scss js',
     ignore: ['dist/**/*', 'core/**/*', 'content/**/*', 'node_modules/**/*']
   })
-  .on('change', ['sass', 'image', 'font', 'static', 'scripts', 'html'])
+  .on('change', ['sass', 'image', 'font', 'static', 'javascript', 'html'])
   .on('restart', livereload);
 });
 
@@ -185,4 +150,4 @@ gulp.task('server:restart', function() {
 // Default Task
 gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'html', 'server:start', 'watch' ]);
 
-gulp.task('build', ['sassmin', 'image', 'font', 'static', 'scriptsmin', 'html', 'site']);
+gulp.task('build', ['sassmin', 'image', 'font', 'static', 'javascript', 'html', 'site']);
