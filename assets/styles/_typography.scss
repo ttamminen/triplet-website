@@ -31,20 +31,20 @@ $line-height-multiplier: 1.5;
 
 @font-face {
 	font-family: 'DIN Next';
-	src: url('/blog/assets/fonts/eot/DINNextLTPro-Regular.eot');
-	src: url('/blog/assets/fonts/eot/DINNextLTPro-Regular.eot?#iefix') format('embedded-opentype'),
-	     url('/blog/assets/fonts/woff/DINNextLTPro-Regular.woff') format('woff'),
-	     url('/blog/assets/fonts/ttf/DINNextLTPro-Regular.ttf')  format('truetype');
+	src: url('/fonts/eot/DINNextLTPro-Regular.eot');
+	src: url('/fonts/eot/DINNextLTPro-Regular.eot?#iefix') format('embedded-opentype'),
+	     url('/fonts/woff/DINNextLTPro-Regular.woff') format('woff'),
+	     url('/fonts/ttf/DINNextLTPro-Regular.ttf')  format('truetype');
 	font-style: normal;
 	font-weight: 400;
 }
 
 @font-face {
     font-family: 'DIN Next';
-    src: url('/blog/assets/fonts/eot/DINNextLTPro-Light.eot');
-    src: url('/blog/assets/fonts/eot/DINNextLTPro-Light.eot?#iefix') format('embedded-opentype'),
-         url('/blog/assets/fonts/woff/DINNextLTPro-Light.woff') format('woff'),
-         url('/blog/assets/fonts/ttf/DINNextLTPro-Light.ttf') format('truetype');
+    src: url('/fonts/eot/DINNextLTPro-Light.eot');
+    src: url('/fonts/eot/DINNextLTPro-Light.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/woff/DINNextLTPro-Light.woff') format('woff'),
+         url('/fonts/ttf/DINNextLTPro-Light.ttf') format('truetype');
     font-style: normal;
     font-weight: 200;
 }
