@@ -15,7 +15,7 @@
 $webicons-icons: github twitter rss;
 
 // Specify the path to the webicons directory here. Include trailing slash.
-$webicons-url: "/blog/assets/images/webicons/" !default;
+$webicons-url: "/images/webicons/" !default;
 
 @each $webicons-icon in $webicons-icons {
   .no-svg .webicon.#{$webicons-icon}       { background: url("#{$webicons-url}webicon-#{$webicons-icon}-m.png"); }
