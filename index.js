@@ -4,8 +4,6 @@ var ghost = require('ghost'),
     path = require('path'),
     parentApp = express();
 
-console.log(process.cwd());
-
 function processBuffer( buffer, app ){
   while( buffer.length ){
     var request = buffer.pop();
@@ -34,10 +32,7 @@ function makeGhostMiddleware(options, cb) {
 
 parentApp.set('port', (process.env.PORT || 2368));
 
-parentApp.engine('hbs', hbs.express4({
-  //defaultLayout: path.join(process.cwd(), 'views', 'layouts', 'main.hbs'),
-  //layoutsDir: path.join(process.cwd(), 'views', 'layouts')
-}));
+parentApp.engine('hbs', hbs.express4({}));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
 parentApp.use(express.static(path.join(process.cwd(), 'public')));
@@ -58,9 +53,7 @@ parentApp.get('/styleguide', function (req, res) {
 parentApp.use( '/blog', makeGhostMiddleware({
   config: path.join(process.cwd(), 'config.js')
 }, function (ghostServer) {
-  //parentApp.use(ghostServer.config.paths.subdir, ghostServer.rootApp);
   require('./helpers')();
-  //ghostServer.start(parentApp);
 }));
 
 parentApp.listen(parentApp.get('port'), function() {
