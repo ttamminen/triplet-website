@@ -50,10 +50,18 @@ $line-height-multiplier: 1.5;
 }
 
 body {
-	font-family: 'DIN Next', arial;
+	font-family: arial;
 	font-weight: 200;
 	font-size: 1em;
 	line-height: 1.5;
+}
+
+body.din-regular-loaded {
+	font-family: 'DIN Next', arial;
+}
+
+body.din-thin-loaded {
+	font-family: 'DIN Next', arial;
 }
 
 h1,h2,h3,h4,h5,h6,hgroup,

@@ -2,11 +2,9 @@ var gulp = require('gulp');
 
 var jshint = require('gulp-jshint');
 var sass = require('gulp-sass');
-var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var livereload = require('gulp-livereload');
 var gutil = require('gulp-util');
-var fileinclude = require('gulp-file-include');
 var nodemon = require('gulp-nodemon');
 var server = require( 'gulp-develop-server');
 var postcss = require('gulp-postcss');
