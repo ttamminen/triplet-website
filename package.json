@@ -21,7 +21,7 @@
     "express": "^4.13.0",
     "express-hbs": "^0.8.4",
     "fontfaceobserver": "^1.5.1",
-    "ghost": "^0.6.4",
+    "ghost": "^0.7.0",
     "globby": "^2.1.0",
     "gulp": "^3.9.0",
     "gulp-develop-server": "^0.4.3",
