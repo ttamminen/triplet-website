@@ -1,22 +1,17 @@
 .read-my-blog {
 	max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.skills-call-to-action-wrapper {
-	display: flex;
-	flex-direction: column;
-
-	> section {
-		flex: 1 50%;	
-	}
-
-	.call-to-action {
-		min-height: 150px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+@media screen and (min-width: 20em) {
+	.skills-call-to-action-wrapper {
+		.call-to-action {
+			min-height: 150px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
 	}
 }
 
@@ -29,6 +24,15 @@
 }
 
 @media screen and (min-width: 30em) {
+	.skills-call-to-action-wrapper {
+		display: flex;
+		flex-direction: column;
+
+		> section {
+			flex: 1 50%;	
+		}
+	}
+	
 	.me-and-what-i-do-wrapper {
 		display: flex;
 
