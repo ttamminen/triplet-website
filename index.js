@@ -30,7 +30,7 @@ function makeGhostMiddleware(options, cb) {
   };
 }
 
-parentApp.set('port', (process.env.PORT || 2368));
+parentApp.set('port', (process.env.PORT || 5000));
 
 parentApp.engine('hbs', hbs.express4({}));
 parentApp.set('view engine', 'hbs');

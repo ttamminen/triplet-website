@@ -10,7 +10,7 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
-        url: process.env.BLOG_URL || 'http://localhost:2368/blog',
+        url: process.env.BLOG_URL || 'http://localhost:5000/blog',
 		mail: {
 			transport: 'SMTP',
 			options: {
@@ -46,7 +46,7 @@ config = {
     development: {
         // The url to use when providing links to the site, E.g. in RSS and email.
         // Change this to your Ghost blogs published URL.
-        url: 'http://localhost:2368/blog',
+        url: 'http://localhost:5000/blog',
 
         // Example mail config
         // Visit http://support.ghost.org/mail for instructions
@@ -76,7 +76,7 @@ config = {
             // Host to be passed to node's `net.Server#listen()`
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
-            port: '2368'
+            port: '5000'
         },
 
         paths: {
@@ -90,7 +90,7 @@ config = {
     // Used when developing Ghost to run tests and check the health of Ghost
     // Uses a different port number
     testing: {
-        url: 'http://127.0.0.1:2369',
+        url: 'http://127.0.0.1:5000',
         database: {
             client: 'sqlite3',
             connection: {
@@ -99,7 +99,7 @@ config = {
         },
         server: {
             host: '127.0.0.1',
-            port: '2369'
+            port: '5000'
         },
         logging: false
     },
@@ -107,7 +107,7 @@ config = {
     // ### Testing MySQL
     // Used by Travis - Automated testing run through GitHub
     'testing-mysql': {
-        url: 'http://127.0.0.1:2369',
+        url: 'http://127.0.0.1:5000',
         database: {
             client: 'mysql',
             connection: {
@@ -120,7 +120,7 @@ config = {
         },
         server: {
             host: '127.0.0.1',
-            port: '2369'
+            port: '5000'
         },
         logging: false
     },
@@ -128,7 +128,7 @@ config = {
     // ### Testing pg
     // Used by Travis - Automated testing run through GitHub
     'testing-pg': {
-        url: 'http://127.0.0.1:2369',
+        url: 'http://127.0.0.1:5000',
         database: {
             client: 'pg',
             connection: {
@@ -141,7 +141,7 @@ config = {
         },
         server: {
             host: '127.0.0.1',
-            port: '2369'
+            port: '5000'
         },
         logging: false
     }
