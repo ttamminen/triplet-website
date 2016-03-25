@@ -31,6 +31,7 @@ $blog-post-content-background-color: $t3-white;
 .blog-post-content {
 	padding: 1em;
 	background-color: $blog-post-content-background-color;
+	@extend %widget;
 
 	@media screen and (min-width: 30em) {
 		margin: 0 2em;
