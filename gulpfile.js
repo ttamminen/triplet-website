@@ -100,7 +100,7 @@ gulp.task('static', function () {
 // Watch Files For Changes
 gulp.task('watch', function() {
   livereload.listen({ basePath: 'public' });
-  gulp.watch(assetsRoot + 'js/**/*', ['javascript', 'server:restart']);
+  gulp.watch(assetsRoot + 'js/**/*', ['dev-javascript', 'server:restart']);
   gulp.watch(assetsRoot + 'styles/**/*.scss', ['sass', 'server:restart']);
   gulp.watch(assetsRoot + 'html/**/*.html', ['html', 'sass', 'javascript', 'server:restart']);
   gulp.watch(assetsRoot + 'images/**/*', ['image', 'server:restart']);
