@@ -33,8 +33,11 @@
 	box-sizing: border-box;
 }
 
+html {
+  font-size: 100%;
+}
+
 body {
-	font-size: 100%;
 	color: $body-text-color;
 }
 

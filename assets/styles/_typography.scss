@@ -18,7 +18,7 @@ $blog-category-text-color: $t3-green;
 
 /* sizes */
 $small-font-size: 0.8rem;
-$body-font-size: 1rem; // 16px
+$body-font-size: 1.125rem; // 18px
 $alpha-font-size: 2.625rem; // 42px
 $beta-font-size: 2.25rem; // 36px
 $gamma-font-size: 1.875rem; // 30px
@@ -52,8 +52,8 @@ $line-height-multiplier: 1.5;
 body {
 	font-family: arial;
 	font-weight: 200;
-	font-size: 1em;
-	line-height: 1.5;
+	@include rem(font-size, $body-font-size);
+	@include rem(line-height, $body-font-size * $line-height-multiplier);
 }
 
 body.din-regular-loaded {
