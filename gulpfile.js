@@ -15,7 +15,6 @@ var globby = require('globby');
 var through = require('through2');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
-var streamify = require('gulp-streamify');
 
 // for the release
 var imagemin = require('gulp-imagemin');
@@ -46,47 +45,30 @@ gulp.task('sassmin', function() {
     .pipe(gulp.dest('public/css'));
 });
 
-gulp.task('javascript', function () {
-  // gulp expects tasks to return a stream, so we create one here.
-  var bundledStream = through();
+gulp.task('dev-javascript', function () {
+  var b = browserify('./assets/js/main.js');
 
-  bundledStream
-    // turns the output bundle stream into a stream containing
-    // the normal attributes gulp plugins expect.
+  return b.bundle()
     .pipe(source('app.js'))
-    // the rest of the gulp task, as you would normally write it.
-    // here we're copying from the Browserify + Uglify2 recipe.
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
-      // Add gulp plugins to the pipeline here.
-      .pipe(streamify(uglify()))
-      .on('error', gutil.log)
+    // Add transformation tasks to the pipeline here.
+    .on('error', gutil.log)
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./public/js/'));
+});
 
-  // "globby" replaces the normal "gulp.src" as Browserify
-  // creates it's own readable stream.
-  globby(['./assets/js/*.js'], function(err, entries) {
-    // ensure any errors from globby are handled
-    if (err) {
-      bundledStream.emit('error', err);
-      return;
-    }
+gulp.task('javascript', function () {
+  var b = browserify('./assets/js/main.js');
 
-    // create the Browserify instance.
-    var b = browserify({
-      entries: entries,
-      debug: true,
-      transform: []
-    });
-
-    // pipe the Browserify stream into the stream we created earlier
-    // this starts our gulp pipeline.
-    b.bundle().pipe(bundledStream);
-  });
-
-  // finally, we return the stream, so gulp knows when this task is done.
-  return bundledStream;
+  return b.bundle()
+    .pipe(source('app.js'))
+    .pipe(buffer())
+    // Add transformation tasks to the pipeline here.
+    .pipe(uglify())
+    .on('error', gutil.log)
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./public/js/'));
 });
 
 gulp.task('font', function () {
@@ -146,6 +128,6 @@ gulp.task('server:restart', function() {
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'server:start', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'dev-javascript', 'server:start', 'watch' ]);
 
 gulp.task('build', ['sassmin', 'image', 'font', 'static', 'javascript', 'site']);
