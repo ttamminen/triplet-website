@@ -86,7 +86,10 @@ label[for="nav-trigger"] {
   height: 30px;
   width: 30px;
   cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' width='30px' height='30px' viewBox='0 0 30 30' enable-background='new 0 0 30 30' xml:space='preserve'><rect fill='#7baf42' width='30' height='6'/><rect fill='#7baf42' y='24' width='30' height='6'/><rect fill='#7baf42' y='12' width='30' height='6'/></svg>");
+  background-image: url(/images/menu.png);
+  background-image: 
+    linear-gradient(transparent, transparent),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' width='30px' height='30px' viewBox='0 0 30 30' enable-background='new 0 0 30 30' xml:space='preserve'><rect fill='#7baf42' width='30' height='6'/><rect fill='#7baf42' y='24' width='30' height='6'/><rect fill='#7baf42' y='12' width='30' height='6'/></svg>");
   background-size: contain;
 }
 
