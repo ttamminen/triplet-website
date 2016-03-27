@@ -35,13 +35,20 @@ hljs.initHighlightingOnLoad();
 new Blazy();
 
 document.addEventListener('DOMContentLoaded', function() { 
-  var container = document.querySelector('.blog-front');
+  var container = document.querySelector('.posts');
   if(!container) {
-      return;
+    return;
   }
+
+  var stamp = document.querySelector('.stamp');
+  if(!stamp) {
+    return;
+  }
+
   new ImagesLoaded(container, function() {
     new Masonry(container, {
-        itemSelector: '.post'
+      itemSelector: '.post',
+      stamp: stamp
     });
   });
 });
