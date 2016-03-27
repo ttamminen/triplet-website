@@ -11,6 +11,7 @@
 @import "webicons";
 
 @import "components/buttons";
+@import "components/navigation";
 @import "components/article-highlight";
 @import "components/group";
 @import "components/tag-selector";
@@ -60,6 +61,7 @@ img[src*=".svg"] {
 
 body {
 	background-color: $page-background-color;
+  overflow-x: hidden;
 }
 
 a, a:visited, a:active {

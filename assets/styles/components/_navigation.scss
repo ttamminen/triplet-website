@@ -1,0 +1,108 @@
+$nav-background-color: $t3-fiord;
+$nav-text-color: $t3-white;
+$nav-text-color-hover: $t3-white;
+$nav-background-color-hover: $t3-green;
+
+/* Navigation Menu - Background */
+.navigation {
+  /* critical sizing and position styles */
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  padding-left: 0;
+  
+  /* non-critical appearance styles */
+  list-style: none;
+  background: $nav-background-color;
+}
+
+/* Navigation Menu - List items */
+.nav-item {
+  /* non-critical appearance styles */
+  width: 200px;
+  margin-left: auto;
+}
+
+.nav-item-link {
+  /* non-critical appearance styles */
+  display: block;
+  padding: 1em;
+  color: $nav-text-color;
+  @include zeta;
+  text-decoration: none;
+  transition: color 0.2s, background 0.5s;
+}
+
+.nav-item-link:visited {
+  color: $nav-text-color;
+}
+
+.nav-item-link:hover {
+  color: $nav-text-color-hover;
+  background: $nav-background-color-hover;
+}
+
+/* Site Wrapper - Everything that isn't navigation */
+.content {
+  /* Critical position and size styles */
+  min-height: 100%;
+  min-width: 100%;
+  background-color: $page-background-color; /* Needs a background or else the nav will show through */
+  position: relative;
+  top: 0;
+  bottom: 100%;
+  left: 0;
+  z-index: 1;
+}
+
+/* Nav Trigger */
+.nav-trigger {
+  /* critical styles - hide the checkbox input */
+  position: fixed;
+  clip: rect(0, 0, 0, 0);
+}
+
+label[for="nav-trigger"] {
+  /* critical positioning styles */
+  position: fixed;
+  right: 15px; 
+  bottom: 15px;
+  z-index: 2;
+  
+  /* non-critical apperance styles */
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' width='30px' height='30px' viewBox='0 0 30 30' enable-background='new 0 0 30 30' xml:space='preserve'><rect fill='#7baf42' width='30' height='6'/><rect fill='#7baf42' y='24' width='30' height='6'/><rect fill='#7baf42' y='12' width='30' height='6'/></svg>");
+  background-size: contain;
+}
+
+/* Make the Magic Happen */
+.nav-trigger + label, .site-wrap {
+  transition: left 0.2s;
+}
+
+.nav-trigger:checked + label {
+  right: 215px;
+}
+
+.nav-trigger:checked ~ .content {
+  left: -200px;
+  box-shadow: 0 0 5px 5px rgba(0,0,0,0.5);
+}
+
+@media screen and (min-width: 1400px) {
+  label[for="nav-trigger"] {
+    position: initial;
+    display: none;
+  }
+
+  .navigation {
+    display: none;
+  }
+}
