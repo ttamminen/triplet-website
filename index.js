@@ -2,7 +2,8 @@ var ghost = require('ghost'),
     express = require('express'),
     hbs  = require('express-hbs'),
     path = require('path'),
-    parentApp = express();
+    parentApp = express(),
+    env = process.env.NODE_ENV || 'development';
 
 function processBuffer( buffer, app ){
   while( buffer.length ){
@@ -30,12 +31,23 @@ function makeGhostMiddleware(options, cb) {
   };
 }
 
+var forceSsl = function (req, res, next) {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(['https://', req.get('Host'), req.url].join(''));
+  }
+  return next();
+};
+
 parentApp.set('port', (process.env.PORT || 5000));
 
 parentApp.engine('hbs', hbs.express4({}));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
 parentApp.use(express.static(path.join(process.cwd(), 'public')));
+
+if (env === 'production') {
+  parentApp.use(forceSsl);
+}
 
 parentApp.get('/', function (req, res) {
   var description = 'TripleT Softworks - Web Development Consulting';
