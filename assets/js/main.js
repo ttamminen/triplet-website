@@ -52,3 +52,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// Grab as much info as possible 
+// outside the scroll handler for performace reasons.
+var header             = document.querySelector('.image-header'),
+    header_height      = outerHeight(header),
+    nav                = document.querySelector('.nav'),
+    fix_class          = 'nav-fixed';
+
+function stickyScroll(e) {
+
+  if(window.pageYOffset > header_height) {
+    nav.classList.add(fix_class);
+  }
+
+  if(window.pageYOffset < header_height) {
+    nav.classList.remove(fix_class);
+  }
+}
+
+function outerHeight(el) {
+  var height = el.offsetHeight;
+  var style = getComputedStyle(el);
+
+  height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+  return height;
+}
+
+// Scroll handler to toggle classes.
+window.addEventListener('scroll', stickyScroll, false);

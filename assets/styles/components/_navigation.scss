@@ -27,6 +27,13 @@ $nav-background-color-hover: $t3-green;
   margin-left: -5px;
   z-index: 0;
   vertical-align: top;
+  @extend %widget;
+}
+
+.nav-fixed {
+  position: fixed;
+  top: 0;
+  margin-left: 0; 
 }
 
 /* Navigation Menu - List items */
