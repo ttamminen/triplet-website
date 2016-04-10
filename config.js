@@ -39,6 +39,9 @@ config = {
         },
         paths: {
             contentPath: path.join(__dirname, '/content/')
+        },
+        forceAdminSSL: {
+            redirect: false
         }
     },
 
