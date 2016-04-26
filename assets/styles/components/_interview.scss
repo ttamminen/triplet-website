@@ -1,6 +1,7 @@
 .question {
 	font-style: italic;
 	clear: left;
+	@include zeta;
 }
 
 .answer {
