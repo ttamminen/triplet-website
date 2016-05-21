@@ -1,6 +1,5 @@
 var gulp = require('gulp');
 
-var jshint = require('gulp-jshint');
 var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
 var livereload = require('gulp-livereload');
