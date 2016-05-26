@@ -22,6 +22,8 @@ var minifyCSS = require('gulp-minify-css');
 
 var assetsRoot = 'assets/';
 
+var env = process.env.NODE_ENV || 'development';
+
 gulp.task('sass', function() {
   return gulp.src(assetsRoot + 'styles/*.scss')
     .pipe(sass())
@@ -108,7 +110,7 @@ gulp.task('watch', function() {
 gulp.task('site', function () {
   nodemon({
     script: 'index.js',
-    env: { 'NODE_ENV': 'production' },
+    env: { 'NODE_ENV': env },
     ext: 'scss js',
     ignore: ['dist/**/*', 'core/**/*', 'content/**/*', 'node_modules/**/*']
   })
