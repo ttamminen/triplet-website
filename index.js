@@ -19,7 +19,7 @@ function makeGhostMiddleware(options, cb) {
   ghost( options ).then( function( ghost ){
     app = ghost.rootApp;
     processBuffer( requestBuffer, app );
-    cb();
+    cb(ghost);
   });
 
   return function handleRequest(req, res){
@@ -33,7 +33,7 @@ function makeGhostMiddleware(options, cb) {
 
 var forceSsl = function (req, res, next) {
   if (req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect(['https://', req.get('Host'), req.url].join(''));
+    return res.redirect(['https://', req.get('Host'), req.url].join(''));
   }
   return next();
 };

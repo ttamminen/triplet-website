@@ -1,0 +1,12 @@
+{
+  "name":"mini-images",
+  "version": "0.0.1",
+  "dependencies": {
+    "ghost-app": "ttamminen/Ghost-App"
+  },
+  "ghost": {
+    "permissions": {
+      "helpers": ["blogPostMiniImage"]
+    }
+  }
+}
