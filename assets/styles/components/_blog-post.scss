@@ -38,7 +38,9 @@ $blog-post-content-background-color: $t3-white;
 		margin: 0 2em;
 	}
 
-	@media screen and (min-width: 1399px) {
+	@media only screen and (min-width: 1399px), 
+				 only screen and (min-width: 1200px) and (min-resolution: 192dpi)
+	{
 		padding: 2em 6em;
 		display: inline-block;
 		margin-left: calc(50% - #{$content-max-width / 2});
