@@ -1,14 +1,16 @@
-var ghost = require('ghost'),
+"use strict";
+
+let ghost = require('ghost'),
     express = require('express'),
     hbs  = require('express-hbs'),
     path = require('path'),
     parentApp = express(),
     env = process.env.NODE_ENV || 'development';
 
-function processBuffer( buffer, app ){
+function processBuffer(buffer, app) {
   while( buffer.length ){
     var request = buffer.pop();
-    app( request[0], request[1] );
+    app(request[0], request[1]);
   }
 }
 
@@ -16,22 +18,22 @@ function makeGhostMiddleware(options, cb) {
   var requestBuffer = [];
   var app = false;
 
-  ghost( options ).then( function( ghost ){
+  ghost(options).then(ghost => {
     app = ghost.rootApp;
-    processBuffer( requestBuffer, app );
+    processBuffer(requestBuffer, app);
     cb(ghost);
   });
 
-  return function handleRequest(req, res){
+  return (req, res) =>{
     if(!app) {
-      requestBuffer.unshift( [req, res] );
+      requestBuffer.unshift([req, res]);
     } else {
-      app( req, res );
+      app(req, res);
     }
   };
 }
 
-var forceSsl = function (req, res, next) {
+const forceSsl = (req, res, next) => {
   if (req.headers['x-forwarded-proto'] !== 'https') {
     return res.redirect(['https://', req.get('Host'), req.url].join(''));
   }
@@ -49,7 +51,7 @@ if (env === 'production') {
   parentApp.use(forceSsl);
 }
 
-parentApp.get('/', function (req, res) {
+parentApp.get('/', (req, res) => {
   var description = 'TripleT Softworks - Web Development Consulting';
   res.render('home', {
     description: description,
@@ -58,16 +60,16 @@ parentApp.get('/', function (req, res) {
   });
 });
 
-parentApp.get('/styleguide', function (req, res) {
+parentApp.get('/styleguide', (req, res) => {
   res.render('styleguide');
 });
 
-parentApp.use( '/blog', makeGhostMiddleware({
+parentApp.use('/blog', makeGhostMiddleware({
   config: path.join(process.cwd(), 'config.js')
-}, function (ghostServer) {
+}, ghostServer => {
   require('./helpers')();
 }));
 
-parentApp.listen(parentApp.get('port'), function() {
+parentApp.listen(parentApp.get('port'), () => {
   console.log('Node app is running on port', parentApp.get('port'));
 });
