@@ -38,7 +38,7 @@ blockquote span {
 }
 
 blockquote.plain {
-	padding: 0 0 0 1em;
+	padding: 0 1em 0 1em;
 	font-size: initial;
 	border-left: 4px solid lighten($blockquote-effect-color,20%);
 

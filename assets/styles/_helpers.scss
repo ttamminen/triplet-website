@@ -30,6 +30,10 @@
 	@extend %centered-content;
 }
 
+.u-left-aligned-content {
+	text-align: left;
+}
+
 %link-with-arrow {
 	text-decoration: none;
 
