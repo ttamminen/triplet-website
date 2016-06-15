@@ -53,12 +53,14 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Grab as much info as possible 
-// outside the scroll handler for performace reasons.
-var header             = document.querySelector('.image-header'),
-    header_height      = outerHeight(header),
-    nav                = document.querySelector('.nav'),
-    fix_class          = 'nav-fixed';
+var header = document.querySelector('.image-header');
+if(!header) {
+  return;
+}
+
+var header_height = outerHeight(header);
+var nav = document.querySelector('.nav');
+var fix_class = 'nav-fixed';
 
 function stickyScroll(e) {
 
