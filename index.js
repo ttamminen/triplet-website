@@ -7,6 +7,9 @@ let ghost = require('ghost'),
     parentApp = express(),
     env = process.env.NODE_ENV || 'development';
 
+const viewsPath = path.join(process.cwd(), 'views');
+const layoutsPath = path.join(viewsPath, 'layouts');
+
 function processBuffer(buffer, app) {
   while( buffer.length ){
     var request = buffer.pop();
@@ -42,9 +45,8 @@ const forceSsl = (req, res, next) => {
 
 parentApp.set('port', (process.env.PORT || 5000));
 
-parentApp.engine('hbs', hbs.express4({}));
+parentApp.engine('hbs', hbs.express4({ defaultLayout: path.join(layoutsPath, 'main') }));
 parentApp.set('view engine', 'hbs');
-parentApp.set('views', path.join(process.cwd(), 'views'));
 parentApp.use(express.static(path.join(process.cwd(), 'public')));
 
 if (env === 'production') {
@@ -55,13 +57,22 @@ parentApp.get('/', (req, res) => {
   var description = 'TripleT Softworks - Web Development Consulting';
   res.render('home', {
     description: description,
-    title: description,
-    layout: 'layouts/main'
+    title: description
   });
 });
 
 parentApp.get('/styleguide', (req, res) => {
-  res.render('styleguide');
+  res.render('styleguide', {
+    layout: false
+  });
+});
+
+parentApp.get('/thanks', (req, res) => {
+  var thanks = 'TripleT Softworks - Thank you for subscribing';
+  res.render('thanks', {
+    description: thanks,
+    title: thanks
+  });
 });
 
 parentApp.use('/blog', makeGhostMiddleware({

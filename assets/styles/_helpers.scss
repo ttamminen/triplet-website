@@ -16,6 +16,10 @@
 	padding-left: 0;
 }
 
+.u-plain-list {
+	@extend %plain-list;
+}
+
 .u-centered-text {
 	text-align: center;
 }
