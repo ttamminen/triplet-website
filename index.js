@@ -7,7 +7,7 @@ let ghost = require('ghost'),
     parentApp = express(),
     env = process.env.NODE_ENV || 'development';
 
-const viewsPath = path.join(process.cwd(), 'views');
+const viewsPath = path.join(__dirname, 'views');
 const layoutsPath = path.join(viewsPath, 'layouts');
 
 function processBuffer(buffer, app) {
@@ -49,7 +49,7 @@ var defaultLayout = path.join(layoutsPath, 'main.hbs');
 console.log(defaultLayout);
 parentApp.engine('hbs', hbs.express4({ defaultLayout: defaultLayout }));
 parentApp.set('view engine', 'hbs');
-parentApp.use(express.static(path.join(process.cwd(), 'public')));
+parentApp.use(express.static(path.join(__dirname, 'public')));
 
 if (env === 'production') {
   parentApp.use(forceSsl);
@@ -78,7 +78,7 @@ parentApp.get('/thanks', (req, res) => {
 });
 
 parentApp.use('/blog', makeGhostMiddleware({
-  config: path.join(process.cwd(), 'config.js')
+  config: path.join(__dirname, 'config.js')
 }, ghostServer => {
   require('./helpers')();
 }));
