@@ -24,10 +24,14 @@
 	text-align: center;
 }
 
+@mixin centered-content() {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 %centered-content {	
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
+	@include centered-content;
 }
 
 .u-centered-content {

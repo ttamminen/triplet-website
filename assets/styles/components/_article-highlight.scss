@@ -12,6 +12,17 @@
 	background-color: $t3-white;
 }
 
+.article-highlight-half {
+	width: 100%;
+}
+
+@media screen and (min-width: 40em) {
+	.article-highlight-half {
+		width: 50%;
+		@include centered-content();
+	}
+}
+
 .article-highlight-image {
 	vertical-align: baseline;
 	display: block;
