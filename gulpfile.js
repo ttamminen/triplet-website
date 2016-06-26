@@ -2,13 +2,16 @@ var gulp = require('gulp');
 
 var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
+var babel = require('babelify');
 var livereload = require('gulp-livereload');
 var gutil = require('gulp-util');
 var nodemon = require('gulp-nodemon');
 var server = require( 'gulp-develop-server');
 var postcss = require('gulp-postcss');
 var browserify = require('browserify');
+var watchify = require('watchify');
 var source = require('vinyl-source-stream');
+var fs = require('fs');
 
 var globby = require('globby');
 var through = require('through2');
@@ -46,30 +49,40 @@ gulp.task('sassmin', function() {
     .pipe(gulp.dest('public/css'));
 });
 
-gulp.task('dev-javascript', function () {
-  var b = browserify('./assets/js/main.js');
+function compile(watch) {
+  var bundler = watchify(browserify('./assets/js/main.js', { debug: true }).transform(babel));
 
-  return b.bundle()
-    .pipe(source('app.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Add transformation tasks to the pipeline here.
-    .on('error', gutil.log)
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./public/js/'));
+  function rebundle() {
+    bundler.bundle()
+      .on('error', function(err) { console.error(err); this.emit('end'); })
+      .pipe(source('app.js'))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({ loadMaps: true }))
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest('./public/js/'));
+  }
+
+  if (watch) {
+    bundler.on('update', function() {
+      console.log('-> bundling...');
+      rebundle();
+      livereload();
+    });
+  }
+
+  rebundle();
+}
+
+function watch() {
+  return compile(true);
+};
+
+gulp.task('dev-javascript', function () {
+  return watch();
 });
 
 gulp.task('javascript', function () {
-  var b = browserify('./assets/js/main.js');
-
-  return b.bundle()
-    .pipe(source('app.js'))
-    .pipe(buffer())
-    // Add transformation tasks to the pipeline here.
-    .pipe(uglify())
-    .on('error', gutil.log)
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./public/js/'));
+  return compile(false);
 });
 
 gulp.task('font', function () {
@@ -129,6 +142,6 @@ gulp.task('server:restart', function() {
 });
 
 // Default Task
-gulp.task('default', ['sass', 'image', 'font', 'static', 'dev-javascript', 'server:start', 'watch' ]);
+gulp.task('default', ['sass', 'image', 'font', 'static', 'javascript', 'server:start', 'watch' ]);
 
 gulp.task('build', ['sassmin', 'image', 'font', 'static', 'javascript', 'site']);

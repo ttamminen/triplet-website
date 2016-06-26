@@ -1,45 +1,51 @@
 /* exported Utils */
 /* global XMLHttpRequest */
 
-"use strict";
-
 module.exports = {
-  addClass: function (el, className) {
-    if (el.classList) { 
-      el.classList.add(className);
-    }
-    else {
-        el.className += ' ' + className;
-    }
-  },
-
-  removeClass: function (el, className) {
+  addClass(el, className) {
     if (el.classList) {
-        el.classList.remove(className);
-      }
-    else {
-        el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+      el.classList.add(className);
+    } else {
+      el.className += ` ${className}`; // eslint-disable-line no-param-reassign
     }
   },
 
-  getJSON: function (url, successCallback) {
-    var request = new XMLHttpRequest();
+  removeClass(el, className) {
+    if (el.classList) {
+      el.classList.remove(className);
+    } else {
+      el.className = el.className // eslint-disable-line no-param-reassign
+        .replace(new RegExp('(^|\\b)' + className.split(' ') // eslint-disable-line prefer-template
+        .join('|') + '(\\b|$)', 'gi'), ' ');
+    }
+  },
+
+  getJSON(url, successCallback) {
+    const request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    request.onload = function() {
-      if (this.status >= 200 && this.status < 400){
+    request.onload = function onloadCallback() {
+      if (this.status >= 200 && this.status < 400) {
         // Success!
-        var data = JSON.parse(this.response);
+        const data = JSON.parse(this.response);
         successCallback(data);
       } else {
-        console.log("Ajax request failed");
+        console.log('Ajax request failed');
       }
     };
 
-    request.onerror = function() {
-        console.log("Ajax request failed");
+    request.onerror = function onerrorCallback() {
+      console.log('Ajax request failed');
     };
 
-    request.send();   
-  } 
+    request.send();
+  },
+
+  outerHeight(el) {
+    let height = el.offsetHeight;
+    const style = getComputedStyle(el);
+
+    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
+    return height;
+  }
 };
