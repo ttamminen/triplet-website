@@ -37,14 +37,3 @@
 .u-left-aligned-content {
 	text-align: left;
 }
-
-%link-with-arrow {
-	text-decoration: none;
-
-	&:after {
-		transition: 0.2s ease-in-out;
-		display: inline-block;
-		margin-left: 5px;
-		content: " »";
-	}
-}
