@@ -1,0 +1,14 @@
+$important-notice-background-color: $t3-green;
+$important-notice-height: 105px;
+$important-notice-over-border-width: 40px;
+
+
+.important-notice {
+  height: $important-notice-height;
+  margin-left: -($important-notice-over-border-width);
+  width: calc(100% + #{$important-notice-over-border-width * 2});
+  background-color: $important-notice-background-color;
+  margin-bottom: 1em;
+  box-shadow: 0px 2px 8px 0px;
+  border-bottom: none;
+}
