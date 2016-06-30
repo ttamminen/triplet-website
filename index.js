@@ -80,6 +80,15 @@ parentApp.get('/thanks', (req, res) => {
   });
 });
 
+parentApp.get('/email_policy', (req, res) => {
+  var emailPolicy = 'TripleT Softworks - Email Policy';
+  res.render('email_policy', {
+    description: emailPolicy,
+    title: emailPolicy,
+    layout: 'layouts/main'
+  });
+});
+
 parentApp.use('/blog', makeGhostMiddleware({
   config: path.join(process.cwd(), 'config.js')
 }, ghostServer => {

@@ -151,6 +151,11 @@ pre,table,fieldset,hr,code {
 	font-weight: 200;
 }
 
+.content-title {
+	@include zeta;
+	font-weight: 200;
+}
+
 .group-title {
 	@include alpha;
 	font-weight: 200;
