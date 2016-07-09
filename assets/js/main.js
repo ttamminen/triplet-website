@@ -8,6 +8,7 @@ const ImagesLoaded = require('imagesloaded');
 const Masonry = require('masonry-layout');
 const Utils = require('./utils');
 const ScrollHandler = require('./stickyscroll');
+const Notice = require('./notice');
 
 const dinNextRegularObserver = new FontFaceObserver('DIN Next', {
   weight: 400
@@ -60,4 +61,16 @@ if (header) {
   window.addEventListener('scroll', (e) => {
     ScrollHandler.stickyScroll(e, nav, fixClass, headerHeight);
   }, false);
+}
+
+const blogPostContent = document.querySelector('.blog-post-body');
+if (blogPostContent) {
+  let headers = blogPostContent.querySelectorAll('h2');
+  if (headers && headers.length > 1) {
+    const targetHeader = headers[headers.length - 1];
+    var div = document.createElement('div');
+    div.innerHTML = 'some HTML';
+    document.getElementsByTagName('body')[0].appendChild(div);
+    targetHeader.insertBefore(, targetHeader.firstChild);
+  }
 }
