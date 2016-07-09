@@ -63,14 +63,13 @@ if (header) {
   }, false);
 }
 
+const signUp = document.getElementById('js-sign-up');
 const blogPostContent = document.querySelector('.blog-post-body');
 if (blogPostContent) {
-  let headers = blogPostContent.querySelectorAll('h2');
+  const headers = blogPostContent.querySelectorAll('h2');
+  Utils.removeClass(signUp, 'hidden');
   if (headers && headers.length > 1) {
     const targetHeader = headers[headers.length - 1];
-    var div = document.createElement('div');
-    div.innerHTML = 'some HTML';
-    document.getElementsByTagName('body')[0].appendChild(div);
-    targetHeader.insertBefore(, targetHeader.firstChild);
+    targetHeader.parentNode.insertBefore(signUp, targetHeader);
   }
 }
