@@ -6,8 +6,8 @@ module.exports = {
     const blogPostContent = document.querySelector('.blog-post-body');
     if (blogPostContent) {
       const headers = blogPostContent.querySelectorAll('h2');
-      Utils.removeClass(signUp, 'hidden');
       if (headers && headers.length > 2) {
+        Utils.removeClass(signUp, 'hidden');
         const targetHeader = headers[headers.length - 2];
         targetHeader.parentNode.insertBefore(signUp, targetHeader);
       }
