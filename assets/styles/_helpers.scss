@@ -30,6 +30,12 @@
   margin-right: auto;
 }
 
+@mixin vertical-align() {
+  transform: translateY(-50%);
+  top: 50%;
+  position: absolute;
+}
+
 %centered-content {	
 	@include centered-content;
 }

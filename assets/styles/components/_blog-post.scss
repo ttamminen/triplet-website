@@ -35,6 +35,7 @@ $blog-post-content-background-color: $t3-white;
 	position: relative;
 
 	@media screen and (min-width: 30em) {
+		padding: 1em 2em;
 		margin: 0 2em;
 	}
 
@@ -57,8 +58,8 @@ $blog-post-content-background-color: $t3-white;
 }
 
 .blog-post-body {
-	padding-bottom: 3em;
-	margin-bottom: 1em;
+	padding-bottom: 2em;
+	margin-bottom: 2em;
 	@extend %horizontal-rule;
 }
 
@@ -72,18 +73,20 @@ $blog-post-content-background-color: $t3-white;
 
 .blog-post-author {
 	@extend %group;
-}
-
-.blog-post-author-caption {
-	@include eta;
-	font-weight: 200;
+	position: relative;
 }
 
 .blog-post-author-image {
-	float: left;
-	width: 30%;
+	@include centered-content;
+	width: 45%;
 	border-radius: 50%;
+	margin-bottom: 1em;
 	transition: border-radius 2s;
+
+	@media screen and (min-width: 40em) {
+		float: left;
+		width: 30%;
+	}
 }
 
 .blog-post-author-image:hover {
@@ -91,16 +94,10 @@ $blog-post-content-background-color: $t3-white;
 }
 
 .blog-post-author-description {
-	float: left;
-	width: 65%;
-	margin-left: 5%;
-	margin-top: 1rem;
-}
 
-@media screen and (min-width: 50em) {
-	.blog-post-author-description {
-		margin-top: 0;
-		transform: translateY(50%);
+	@media screen and (min-width: 40em) {
+		@include vertical-align;
+		left: 35%;
 	}
 }
 

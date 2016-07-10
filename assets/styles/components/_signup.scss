@@ -1,0 +1,32 @@
+.signup-fields {
+  float: left;
+  width: 35%;
+}
+
+.signup-email {
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.signup-email-label {
+  @include zeta;
+}
+
+.signup-description {
+  float: left;
+  width: 60%;
+  margin-right: 5%;
+  @include zeta;
+}
+
+.signup-header {
+  @include delta;
+  margin-bottom: 0.75em;
+  font-weight: 200;
+  color: $t3-white;
+}
+
+.button.signup {
+  border: 3px solid darken($t3-green, 25%);
+}
