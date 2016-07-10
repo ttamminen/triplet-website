@@ -63,13 +63,4 @@ if (header) {
   }, false);
 }
 
-const signUp = document.getElementById('js-sign-up');
-const blogPostContent = document.querySelector('.blog-post-body');
-if (blogPostContent) {
-  const headers = blogPostContent.querySelectorAll('h2');
-  Utils.removeClass(signUp, 'hidden');
-  if (headers && headers.length > 1) {
-    const targetHeader = headers[headers.length - 1];
-    targetHeader.parentNode.insertBefore(signUp, targetHeader);
-  }
-}
+Notice.init();

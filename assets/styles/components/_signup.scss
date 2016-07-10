@@ -1,23 +1,28 @@
-.signup-fields {
-  float: left;
-  width: 35%;
-}
-
 .signup-email {
   width: 100%;
   padding: 0.5em;
   margin-bottom: 0.5em;
 }
 
-.signup-email-label {
+.signup-email-label, .signup-description {
   @include zeta;
 }
 
 .signup-description {
-  float: left;
-  width: 60%;
-  margin-right: 5%;
-  @include zeta;
+  margin-bottom: 1em;
+}
+
+@media screen and (min-width: 35em) {
+  .signup-description {
+    width: 60%;
+    margin-right: 5%;
+    float: left;
+  }
+
+  .signup-fields {
+    float: left;
+    width: 35%;
+  } 
 }
 
 .signup-header {
