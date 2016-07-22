@@ -8,7 +8,7 @@ const ImagesLoaded = require('imagesloaded');
 const Masonry = require('masonry-layout');
 const Utils = require('./utils');
 const ScrollHandler = require('./stickyscroll');
-const Notice = require('./notice');
+//const Notice = require('./notice');
 
 const dinNextRegularObserver = new FontFaceObserver('DIN Next', {
   weight: 400
@@ -63,4 +63,4 @@ if (header) {
   }, false);
 }
 
-Notice.init();
+//Notice.init();
