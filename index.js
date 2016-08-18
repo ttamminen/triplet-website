@@ -80,6 +80,15 @@ parentApp.get('/thanks', (req, res) => {
   });
 });
 
+parentApp.get('/project_opportunities', (req, res) => {
+  var thanks = 'TripleT Softworks - Project opportunities';
+  res.render('project_opportunities', {
+    description: thanks,
+    title: thanks,
+    layout: 'layouts/main'
+  });
+});
+
 parentApp.get('/email_policy', (req, res) => {
   var emailPolicy = 'TripleT Softworks - Email Policy';
   res.render('email_policy', {
