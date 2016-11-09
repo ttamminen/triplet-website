@@ -89,6 +89,15 @@ parentApp.get('/project_opportunities', (req, res) => {
   });
 });
 
+parentApp.get('/hangout', (req, res) => {
+  var hangout = 'TripleT Softworks - Google Hangout';
+  res.render('hangout', {
+    description: hangout,
+    title: hangout,
+    layout: 'layouts/main'
+  });
+});
+
 parentApp.get('/email_policy', (req, res) => {
   var emailPolicy = 'TripleT Softworks - Email Policy';
   res.render('email_policy', {
