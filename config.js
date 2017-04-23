@@ -22,13 +22,12 @@ config = {
 			}
 		},
         database: {
-            client: 'postgres',
+            client: 'mysql',
             connection: {
-                host: process.env.POSTGRES_URL,
-                user: process.env.POSTGRES_USER,
-                password: process.env.POSTGRES_PASS,
-                database: process.env.POSTGRES_DB,
-                port: process.env.POSTGRES_PORT
+                host: process.env.CLEARDB_URL,
+                user: process.env.CLEARDB_USER,
+                password: process.env.CLEARDB_PASSWORD,
+                database: process.env.CLEARDB_DATABASE
             }
         },
         server: {
