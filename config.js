@@ -28,8 +28,7 @@ config = {
                 user: process.env.CLEARDB_USER,
                 password: process.env.CLEARDB_PASSWORD,
                 database: process.env.CLEARDB_DATABASE,
-                charset: 'utf8',
-                debug: true
+                charset: 'utf8'
             }
         },
         server: {
