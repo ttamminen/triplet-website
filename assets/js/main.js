@@ -1,20 +1,21 @@
 /* global hljs, document, FontFaceObserver */
 /* jshint -W031 */ // https://jslinterrors.com/do-not-use-new-for-side-effects
 
+require('babel-polyfill');
 require('./vendor/highlight.pack');
-require('fontfaceobserver/fontfaceobserver.js');
+const FontFaceObserver = require('fontfaceobserver');
 const Blazy = require('blazy');
 const ImagesLoaded = require('imagesloaded');
 const Masonry = require('masonry-layout');
 const Utils = require('./utils');
 const ScrollHandler = require('./stickyscroll');
-//const Notice = require('./notice');
+// const Notice = require('./notice');
 
 const dinNextRegularObserver = new FontFaceObserver('DIN Next', {
   weight: 400
 });
 
-dinNextRegularObserver.check(null, 5000).then(() => {
+dinNextRegularObserver.load().then(() => {
   Utils.addClass(document.body, 'din-regular-loaded');
 }, () => {
   console.log('DIN Next - Regular is not available');
@@ -24,7 +25,7 @@ const dinNextThinObserver = new FontFaceObserver('DIN Next', {
   weight: 200
 });
 
-dinNextThinObserver.check(null, 5000).then(() => {
+dinNextThinObserver.load().then(() => {
   Utils.addClass(document.body, 'din-thin-loaded');
 }, () => {
   console.log('DIN Next - Thin is not available');
@@ -63,4 +64,4 @@ if (header) {
   }, false);
 }
 
-//Notice.init();
+// Notice.init();

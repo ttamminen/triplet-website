@@ -27,7 +27,7 @@
 		flex-direction: column;
 
 		> section {
-			flex: 1 50%;	
+			flex: 1 50%;
 		}
 	}
 
@@ -48,21 +48,21 @@
 	}	
 }
 
-@media screen and (min-width: 30em) {
+@media screen and (min-width: 30em) and (max-width: 45em) {
 	.references-wrapper {
 		display: flex;
 		flex-flow: row wrap;
 
-		> section {
+		> section.mobile-split-half {
 			flex: 1 46%;
-			margin-left: 2%;
+			margin-right: 2%;
 		}
 
-		> section:first-child {
-			margin-left: 0;
+		> section:nth-child(2n) {
+			margin-right: 0;
 		}
 
-		> section:last-child {
+		> section {
 			flex: 1 100%;
 			margin-right: 0;
 			margin-left: 0;
@@ -72,21 +72,18 @@
 
 @media screen and (min-width: 45em) {
 	.references-wrapper {
+		display: flex;
 		flex-wrap: nowrap;
+		justify-content: center;
 
 		> section {
 			flex: 1 32%;
+			max-width: 389px;
 			margin-left: 0;
 			margin-right: 2%;
 		}
 
-		> section:first-child {
-			flex: 1 32%;
-			margin-left: 0;
-		}
-
 		> section:last-child {
-			flex: 1 32%;
 			margin-right: 0;
 		}
 	}
