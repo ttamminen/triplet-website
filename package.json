@@ -24,7 +24,7 @@
     "express": "4.15.2",
     "express-hbs": "1.0.4",
     "fontfaceobserver": "2.0.9",
-    "ghost": "0.11.9",
+    "ghost": "0.11.11",
     "ghost-app": "ttamminen/Ghost-App",
     "globby": "6.1.0",
     "gulp": "3.9.1",
