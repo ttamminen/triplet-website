@@ -1,34 +1,32 @@
-"use strict";
-
 let ghost = require('ghost'),
-    express = require('express'),
-    hbs  = require('express-hbs'),
-    path = require('path'),
-    parentApp = express(),
-    env = process.env.NODE_ENV || 'development';
+  express = require('express'),
+  hbs = require('express-hbs'),
+  path = require('path'),
+  parentApp = express(),
+  env = process.env.NODE_ENV || 'development';
 
 const viewsPath = path.join(process.cwd(), 'views');
 const layoutsPath = path.join(viewsPath, 'layouts');
 
 function processBuffer(buffer, app) {
-  while( buffer.length ){
-    var request = buffer.pop();
+  while (buffer.length) {
+    const request = buffer.pop();
     app(request[0], request[1]);
   }
 }
 
 function makeGhostMiddleware(options, cb) {
-  var requestBuffer = [];
-  var app = false;
+  const requestBuffer = [];
+  let app = false;
 
-  ghost(options).then(ghost => {
+  ghost(options).then((ghost) => {
     app = ghost.rootApp;
     processBuffer(requestBuffer, app);
     cb(ghost);
   });
 
-  return (req, res) =>{
-    if(!app) {
+  return (req, res) => {
+    if (!app) {
       requestBuffer.unshift([req, res]);
     } else {
       app(req, res);
@@ -45,9 +43,9 @@ const forceSsl = (req, res, next) => {
 
 parentApp.set('port', (process.env.PORT || 5000));
 
-var defaultLayout = path.join(layoutsPath, 'main.hbs');
+const defaultLayout = path.join(layoutsPath, 'main.hbs');
 console.log(defaultLayout);
-parentApp.engine('hbs', hbs.express4({ defaultLayout: defaultLayout }));
+parentApp.engine('hbs', hbs.express4({ defaultLayout }));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
 parentApp.use(express.static(path.join(process.cwd(), 'public')));
@@ -57,9 +55,9 @@ if (env === 'production') {
 }
 
 parentApp.get('/', (req, res) => {
-  var description = 'TripleT Softworks - Web Development Consulting';
+  const description = 'TripleT Softworks - Web Development Consulting';
   res.render('home', {
-    description: description,
+    description,
     title: description,
     layout: 'layouts/main'
   });
@@ -72,7 +70,7 @@ parentApp.get('/styleguide', (req, res) => {
 });
 
 parentApp.get('/thanks', (req, res) => {
-  var thanks = 'TripleT Softworks - Thank you for subscribing';
+  const thanks = 'TripleT Softworks - Thank you for subscribing';
   res.render('thanks', {
     description: thanks,
     title: thanks,
@@ -81,7 +79,7 @@ parentApp.get('/thanks', (req, res) => {
 });
 
 parentApp.get('/project_opportunities', (req, res) => {
-  var thanks = 'TripleT Softworks - Project opportunities';
+  const thanks = 'TripleT Softworks - Project opportunities';
   res.render('project_opportunities', {
     description: thanks,
     title: thanks,
@@ -89,8 +87,17 @@ parentApp.get('/project_opportunities', (req, res) => {
   });
 });
 
+parentApp.get('/workshops/mark_seemann', (req, res) => {
+  const thanks = 'TripleT Softworks - Mark Seemann Workshop';
+  res.render('workshops/mark_seemann', {
+    description: thanks,
+    title: thanks,
+    layout: '../layouts/main'
+  });
+});
+
 parentApp.get('/hangout', (req, res) => {
-  var hangout = 'TripleT Softworks - Google Hangout';
+  const hangout = 'TripleT Softworks - Google Hangout';
   res.render('hangout', {
     description: hangout,
     title: hangout,
@@ -99,7 +106,7 @@ parentApp.get('/hangout', (req, res) => {
 });
 
 parentApp.get('/email_policy', (req, res) => {
-  var emailPolicy = 'TripleT Softworks - Email Policy';
+  const emailPolicy = 'TripleT Softworks - Email Policy';
   res.render('email_policy', {
     description: emailPolicy,
     title: emailPolicy,
@@ -109,7 +116,7 @@ parentApp.get('/email_policy', (req, res) => {
 
 parentApp.use('/blog', makeGhostMiddleware({
   config: path.join(process.cwd(), 'config.js')
-}, ghostServer => {
+}, (ghostServer) => {
   require('./helpers')();
 }));
 
