@@ -4,7 +4,7 @@
   "description": "TripleT Web-site",
   "main": "index.js",
   "scripts": {
-    "start": "node ./node_modules/gulp/bin/gulp.js build",
+    "start": "gulp build",
     "serve": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
