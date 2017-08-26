@@ -1,3 +1,5 @@
+'use strict';
+
 let ghost = require('ghost'),
   express = require('express'),
   hbs = require('express-hbs'),
