@@ -1,0 +1,44 @@
+.workshop-sponsor-logo {
+  max-width: 300px;
+}
+
+.workshop-speaker-portrait {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.workshop-buy-tickets {
+  min-height: 314px;
+}
+
+@media (min-width: 900px) {
+  .workshop-details-and-author-wrapper, .sponsors-and-ticket-sale-wrapper {
+    display: flex;
+    align-content: space-between;
+  }
+  
+  .workshop-details {
+    flex: 1.6;
+    margin-right: 3rem;
+  }
+  
+  .workshop-speaker {
+    flex: 1;
+  }
+  
+  .workshop-topic, .workshop-goal {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .sponsors {
+    flex: 1;
+    margin-right: 3rem;
+  }
+  
+  .workshop-buy-tickets {
+    flex: 1.6;
+  }
+}

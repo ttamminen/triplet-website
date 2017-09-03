@@ -52,13 +52,13 @@
 }
 
 .highlight-content {
-	display: inline-block;
 	text-align: center;
+	display: inline-block;
 	max-width: 90%; // fixes a flexbox bug in IE
 	@include rem(margin-left, 1em);
 	@include rem(margin-right, 1em);
 	@include rem(padding-top, 2em);
-}
+}	
 
 @media screen and (min-width: 35em) {
 	.highlight-content {	
@@ -108,31 +108,27 @@
 .call-to-action {
 	@extend %widget;
 	background-color: $t3-green;
-	text-align: center;
-
-	&:before {
-		content: '';
-		display: inline-block;
-		height: 100%;
-		vertical-align: middle;
-		margin-right: -0.25em; /* Adjusts for spacing */
-	}
+	display: flex;
+	align-items: center;	
 }
 
 .call-to-action-header {
 	@include rem(font-size, $alpha-font-size);
+	width: 100%;
 	line-height: 1;
 	margin-bottom: 0;
 	font-weight: 200;
-	border-bottom: 2px solid $t3-white; 
 	vertical-align: middle;
+	display: inline-block;
 
 	a, a:visited {
 		color: $t3-white;
 		text-decoration: none;
+		border-bottom: 2px solid $t3-white; 
 	}
 
 	a:hover {
 		color: darken($t3-white, 20%);
+		border-bottom: 2px solid darken($t3-white, 20%); 
 	}
 }

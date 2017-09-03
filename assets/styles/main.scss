@@ -25,10 +25,12 @@
 @import "components/opt-in";
 @import "components/notice";
 @import "components/signup";
+@import "components/table";
 
 @import "pages/thanks";
 @import "pages/shared";
 @import "pages/blog-front";
+@import "pages/workshop";
 @import "pages/main";
 
 @import "vendor/highlightjs";
@@ -80,6 +82,10 @@ a:hover {
 a.emphasized {
 	color: $t3-green;
 	@include eta;
+}
+
+table {
+	margin-bottom: 0;
 }
 
 tbody:before {
