@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   stickyScroll(e, nav, fixClass, headerHeight) {
     if (window.pageYOffset > headerHeight) {
       nav.classList.add(fixClass);

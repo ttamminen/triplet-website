@@ -1,7 +1,7 @@
 /* exported Utils */
 /* global XMLHttpRequest */
 
-module.exports = {
+export default {
   addClass(el, className) {
     if (el.classList) {
       el.classList.add(className);
@@ -18,27 +18,6 @@ module.exports = {
         .replace(new RegExp('(^|\\b)' + className.split(' ') // eslint-disable-line prefer-template
         .join('|') + '(\\b|$)', 'gi'), ' ');
     }
-  },
-
-  getJSON(url, successCallback) {
-    const request = new XMLHttpRequest();
-    request.open('GET', url, true);
-
-    request.onload = function onloadCallback() {
-      if (this.status >= 200 && this.status < 400) {
-        // Success!
-        const data = JSON.parse(this.response);
-        successCallback(data);
-      } else {
-        console.log('Ajax request failed');
-      }
-    };
-
-    request.onerror = function onerrorCallback() {
-      console.log('Ajax request failed');
-    };
-
-    request.send();
   },
 
   outerHeight(el) {

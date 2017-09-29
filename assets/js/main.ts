@@ -1,14 +1,11 @@
-/* global hljs, document, FontFaceObserver */
-/* jshint -W031 */ // https://jslinterrors.com/do-not-use-new-for-side-effects
-
-require('babel-polyfill');
-require('./vendor/highlight.pack');
-const FontFaceObserver = require('fontfaceobserver');
-const Blazy = require('blazy');
-const ImagesLoaded = require('imagesloaded');
-const Masonry = require('masonry-layout');
-const Utils = require('./utils');
-const ScrollHandler = require('./stickyscroll');
+import 'babel-polyfill'
+import * as hljs from 'highlight.js'
+import * as FontFaceObserver from 'fontfaceobserver'
+import * as Blazy from 'blazy'
+import ImagesLoaded from 'imagesloaded'
+import Masonry from 'masonry-layout'
+import Utils from './utils'
+import ScrollHandler from './stickyscroll'
 // const Notice = require('./notice');
 
 const dinNextRegularObserver = new FontFaceObserver('DIN Next', {
@@ -46,11 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  new ImagesLoaded(container, () => { // eslint-disable-line no-new
-    new Masonry(container, { // eslint-disable-line no-new
+  new ImagesLoaded(container, {}, () => {
+    new Masonry(container, {
       itemSelector: '.post',
       stamp
-    });
+    });      
   });
 });
 

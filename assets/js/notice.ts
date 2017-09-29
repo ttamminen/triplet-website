@@ -1,6 +1,6 @@
-const Utils = require('./utils');
+import Utils from './utils'
 
-module.exports = {
+export default {
   init() {
     const signUp = document.getElementById('js-sign-up');
     const blogPostContent = document.querySelector('.blog-post-body');

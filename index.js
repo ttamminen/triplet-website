@@ -46,7 +46,6 @@ const forceSsl = (req, res, next) => {
 parentApp.set('port', (process.env.PORT || 5000));
 
 const defaultLayout = path.join(layoutsPath, 'main.hbs');
-console.log(defaultLayout);
 parentApp.engine('hbs', hbs.express4({ defaultLayout }));
 parentApp.set('view engine', 'hbs');
 parentApp.set('views', path.join(process.cwd(), 'views'));
