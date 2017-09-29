@@ -47,5 +47,7 @@
     "vinyl-source-stream": "1.1.0",
     "watchify": "3.9.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "prettier": "^1.7.2"
+  }
 }
