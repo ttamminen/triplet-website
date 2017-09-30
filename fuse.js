@@ -1,4 +1,4 @@
-const { FuseBox, Sparky } = require('fuse-box');
+const { FuseBox, Sparky, QuantumPlugin } = require('fuse-box');
 const fs = require('fs');
 const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
@@ -6,20 +6,24 @@ const imageminPngquant = require('imagemin-pngquant');
 const sass = require('node-sass')
 const mkdirp = require('mkdirp');
 
+let isProduction = false;
+let fuse = null;
+let app = null;
+
 Sparky.task('static', () => {
-  return Sparky.src('**.*', { base: './assets/static' }).dest('public/');
+  return srcOrWatch(isProduction)('**.*', { base: './assets/static' }).dest('public/');
 })
 
 Sparky.task('fonts', () => {
-  return Sparky.src('fonts/**.*', { base: './assets' }).dest('public/');
+  return srcOrWatch(isProduction)('fonts/**.*', { base: './assets' }).dest('public/');
 })
 
 Sparky.task('svg', () => {
-  return Sparky.src('images/**/*.svg', { base: './assets' }).dest('public/')
+  return srcOrWatch(isProduction)('images/**/*.svg', { base: './assets' }).dest('public/')
 })
 
 Sparky.task('images', () => {
-  return Sparky.src('images/**/*.+(jpg|png)', { base: './assets' }).file('*.*', file => {
+  return srcOrWatch(isProduction)('images/**/*.+(jpg|png)', { base: './assets' }).file('*.*', file => {
     imagemin([file.filepath], './public/images', {
       plugins: [
         imageminJpegtran(),
@@ -30,13 +34,17 @@ Sparky.task('images', () => {
 })
 
 Sparky.task('styles', () => {
-  return Sparky.src(['styles/main.scss', 'styles/styleguide.scss'], { base: './assets' }).file('*.*', file => {
+  return srcOrWatch(isProduction)(['styles/main.scss', 'styles/styleguide.scss'], { base: './assets' }).file('*.*', file => {
     const path = './public/styles/' + file.name.replace('.scss', '') + '.css'
     return renderScss(file, path)
       .then(console.log)
       .catch(console.error)
   })
 })
+
+const srcOrWatch = function (isProduction) {
+  return isProduction ? Sparky.src : Sparky.watch;
+}
 
 const renderScss = function (file, path) {
   return new Promise(function (resolve, reject) {
@@ -68,16 +76,27 @@ const renderScss = function (file, path) {
   })
 }
 
-Sparky.task('build', () => {
-  const fuse = FuseBox.init({
+Sparky.task('config', () => {
+  fuse = FuseBox.init({
     homeDir: "./assets/js",
     output: "public/js/$name.js",
     plugins: []
   });
-  fuse.bundle("app")
+  app = fuse.bundle("app")
       .instructions(">main.ts");
-
-  return fuse.run();
 });
 
-Sparky.task('default', ['build', 'static', 'fonts', 'svg', 'images', 'styles'], () => {});
+Sparky.task('default', ['clean', 'config', 'static', 'fonts', 'svg', 'images', 'styles'], () => {
+  fuse.dev();
+  app.watch().hmr();
+  return fuse.run();  
+});
+
+Sparky.task('clean', () => Sparky.src('public/').clean('public/'));
+Sparky.task('prod-env', ['clean'], () => {
+  isProduction = true;
+});
+
+Sparky.task('dist', ['prod-env', 'static', 'fonts', 'svg', 'images', 'styles'], () => {
+  return fuse.run();
+})

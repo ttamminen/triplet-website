@@ -4,8 +4,8 @@
   "description": "TripleT Web-site",
   "main": "index.js",
   "scripts": {
-    "start": "gulp build",
-    "serve": "gulp",
+    "start": "node fuse",
+    "dist": "node fuse dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
