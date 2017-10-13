@@ -1,4 +1,4 @@
-const { FuseBox, Sparky, QuantumPlugin } = require('fuse-box');
+const { FuseBox, Sparky, QuantumPlugin, UglifyJSPlugin } = require('fuse-box');
 const fs = require('fs');
 const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
@@ -36,51 +36,69 @@ Sparky.task('images', () => {
 Sparky.task('styles', () => {
   return srcOrWatch(isProduction)(['styles/main.scss', 'styles/styleguide.scss'], { base: './assets' }).file('*.*', file => {
     const path = './public/styles/' + file.name.replace('.scss', '') + '.css'
-    return renderScss(file, path)
+    return buildStyles(file, path)
       .then(console.log)
       .catch(console.error)
   })
 })
 
-const srcOrWatch = function (isProduction) {
+const srcOrWatch = (isProduction) => {
   return isProduction ? Sparky.src : Sparky.watch;
 }
 
-const renderScss = function (file, path) {
+const buildStyles = (sparkyFile, path) => {
+  return renderSCSS(sparkyFile.filepath, path)
+    .then(createStylesDirectory)
+    .then(result => writeStylesOutput(path, result));         
+}
+
+const renderSCSS = (inputFile, outFile) => {
   return new Promise(function (resolve, reject) {
     sass.render({
-      file: file.filepath,
-      outFile: path
+      file: inputFile,
+      outFile: outFile
     }, function(error, result) {
       if(error) {
         reject(error)
         return
       }
-  
-      mkdirp('./public/styles', function (mkdirError) {
-        if(mkdirError) {
-          reject(mkdirError)
-          return
-        }
-  
-        fs.writeFile(path, result.css, function(err) {
-          if(err){
-            reject(err)
-            return
-          }
-  
-          resolve('SASS -> CSS successfully done. Output file: ' + path)
-        });   
-      })
+
+      resolve(result)
     })
   })
+}
+
+const writeStylesOutput = (path, result) => {
+  return new Promise(function (resolve, reject) {
+    fs.writeFile(path, result.css, function(err) {
+      if(err){
+        reject(err)
+        return
+      }
+
+      resolve('SASS -> CSS successfully done. Output file: ' + path)
+    })
+  })
+}
+
+const createStylesDirectory = (styles) => {
+  return new Promise(function (resolve, reject) {
+    mkdirp('./public/styles', function (mkdirError) {
+      if(mkdirError) {
+        reject(mkdirError)
+        return
+      }
+      
+      resolve(styles)
+    })
+  }) 
 }
 
 Sparky.task('config', () => {
   fuse = FuseBox.init({
     homeDir: "./assets/js",
     output: "public/js/$name.js",
-    plugins: []
+    plugins: [UglifyJSPlugin()]
   });
   app = fuse.bundle("app")
       .instructions(">main.ts");

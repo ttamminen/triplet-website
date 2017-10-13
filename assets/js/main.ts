@@ -1,12 +1,10 @@
-import 'babel-polyfill'
-import * as hljs from 'highlight.js'
+import './vendor/highlight.pack.js'
 import * as FontFaceObserver from 'fontfaceobserver'
 import * as Blazy from 'blazy'
 import ImagesLoaded from 'imagesloaded'
 import Masonry from 'masonry-layout'
 import Utils from './utils'
 import ScrollHandler from './stickyscroll'
-// const Notice = require('./notice');
 
 const dinNextRegularObserver = new FontFaceObserver('DIN Next', {
   weight: 400
@@ -28,9 +26,9 @@ dinNextThinObserver.load().then(() => {
   console.log('DIN Next - Thin is not available');
 });
 
-hljs.initHighlightingOnLoad();
+(<any>window).hljs.initHighlightingOnLoad();
 
-new Blazy(); // eslint-disable-line no-new
+new Blazy();
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.querySelector('.posts');
@@ -60,5 +58,3 @@ if (header) {
     ScrollHandler.stickyScroll(e, nav, fixClass, headerHeight);
   }, false);
 }
-
-// Notice.init();
