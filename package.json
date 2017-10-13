@@ -4,7 +4,8 @@
   "description": "TripleT Web-site",
   "main": "index.js",
   "scripts": {
-    "start": "node fuse",
+    "postinstall": "node fuse",
+    "start": "pm2 start index.js",
     "dist": "node fuse dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +23,7 @@
     "babelify": "^7.3.0",
     "blazy": "1.8.2",
     "browserify": "14.3.0",
+    "cssnano": "^3.10.0",
     "ecstatic": "2.1.0",
     "express": "4.15.2",
     "express-hbs": "1.0.4",
@@ -45,6 +47,7 @@
     "imagesloaded": "4.1.1",
     "masonry-layout": "4.2.0",
     "pm2": "^2.7.1",
+    "postcss": "^6.0.13",
     "through2": "2.0.3",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0",
@@ -57,7 +60,6 @@
     "imagemin-pngquant": "^5.0.1",
     "node-mkdirp": "^0.0.1",
     "node-sass": "^4.5.3",
-    "postcss-cli": "^4.1.1",
     "prettier": "^1.7.2",
     "typescript": "^2.5.3"
   }

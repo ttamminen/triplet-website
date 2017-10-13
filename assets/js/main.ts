@@ -1,8 +1,8 @@
-import * as hljs from 'highlight.js'
+import './vendor/highlight.pack.js'
 import * as FontFaceObserver from 'fontfaceobserver'
 import * as Blazy from 'blazy'
-import ImagesLoaded from 'imagesloaded'
-import Masonry from 'masonry-layout'
+import * as ImagesLoaded from 'imagesloaded'
+import * as Masonry from 'masonry-layout'
 import Utils from './utils'
 import ScrollHandler from './stickyscroll'
 

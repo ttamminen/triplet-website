@@ -1,10 +1,14 @@
-const { FuseBox, Sparky, QuantumPlugin, UglifyJSPlugin } = require('fuse-box');
-const fs = require('fs');
-const imagemin = require('imagemin');
-const imageminJpegtran = require('imagemin-jpegtran');
-const imageminPngquant = require('imagemin-pngquant');
+const { FuseBox, Sparky, QuantumPlugin, UglifyJSPlugin, PlainJSPlugin } = require('fuse-box')
+const fs = require('fs')
+const imagemin = require('imagemin')
+const imageminJpegtran = require('imagemin-jpegtran')
+const imageminPngquant = require('imagemin-pngquant')
 const sass = require('node-sass')
-const mkdirp = require('mkdirp');
+const postcss = require('postcss')
+const autoprefixer = require('autoprefixer')
+const cssnano = require('cssnano')
+const mkdirp = require('mkdirp')
+const pm2 = require('pm2')
 
 let isProduction = false;
 let fuse = null;
@@ -49,7 +53,8 @@ const srcOrWatch = (isProduction) => {
 const buildStyles = (sparkyFile, path) => {
   return renderSCSS(sparkyFile.filepath, path)
     .then(createStylesDirectory)
-    .then(result => writeStylesOutput(path, result));         
+    .then(result => writeStylesOutput(path, result))
+    .then(() => postCSS(path));         
 }
 
 const renderSCSS = (inputFile, outFile) => {
@@ -81,6 +86,28 @@ const writeStylesOutput = (path, result) => {
   })
 }
 
+const postCSS = (path) => {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(path, (err, css) => {
+      if(err) {
+        reject(err)
+        return
+      }
+
+      postcss([autoprefixer, cssnano])
+        .process(css, { from: path, to: path })
+        .then(result => {
+            fs.writeFile(path, result.css);
+            if ( result.map ) {
+              fs.writeFile('path' + '.map', result.map);
+            }
+            resolve()
+        });
+      }
+    )
+  }) 
+}
+
 const createStylesDirectory = (styles) => {
   return new Promise(function (resolve, reject) {
     mkdirp('./public/styles', function (mkdirError) {
@@ -101,20 +128,17 @@ Sparky.task('config', () => {
     plugins: [UglifyJSPlugin()]
   });
   app = fuse.bundle("app")
-      .instructions(">main.ts");
+            .instructions(">main.ts")
 });
 
 Sparky.task('default', ['clean', 'config', 'static', 'fonts', 'svg', 'images', 'styles'], () => {
-  fuse.dev();
-  app.watch().hmr();
-  return fuse.run();  
-});
-
-Sparky.task('clean', () => Sparky.src('public/').clean('public/'));
-Sparky.task('prod-env', ['clean'], () => {
-  isProduction = true;
-});
-
-Sparky.task('dist', ['prod-env', 'static', 'fonts', 'svg', 'images', 'styles'], () => {
-  return fuse.run();
+  return fuse.run()
 })
+
+Sparky.task('clean', () => Sparky.src('public/').clean('public/'))
+
+Sparky.task('prod-env', () => {
+  isProduction = true;
+})
+
+Sparky.task('dist', ['prod-env', 'default'])
