@@ -15,7 +15,7 @@ Sparky.task('static', () => {
 })
 
 Sparky.task('fonts', () => {
-  return srcOrWatch(isProduction)('fonts/**.*', { base: './assets' }).dest('public/');
+  return srcOrWatch(isProduction)('fonts/**/*', { base: './assets' }).dest('public/');
 })
 
 Sparky.task('svg', () => {

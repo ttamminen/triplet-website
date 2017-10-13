@@ -19,6 +19,10 @@
     normalize-path "^2.0.1"
     through2 "^2.0.3"
 
+"@types/highlight.js@^9.1.10":
+  version "9.1.10"
+  resolved "https://registry.yarnpkg.com/@types/highlight.js/-/highlight.js-9.1.10.tgz#b621f809cd9573b80992b90cffc5788208e3069c"
+
 JSONSelect@0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/JSONSelect/-/JSONSelect-0.4.0.tgz#a08edcc67eb3fcbe99ed630855344a0cf282bb8d"
@@ -3818,6 +3822,10 @@ he@^1.0.0:
 he@~0.3.6:
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/he/-/he-0.3.6.tgz#9d7bc446e77963933301dd602d5731cb861135e0"
+
+highlight.js@^9.12.0:
+  version "9.12.0"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.12.0.tgz#e6d9dbe57cbefe60751f02af336195870c90c01e"
 
 hijackresponse@^2.0.0:
   version "2.0.1"

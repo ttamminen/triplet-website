@@ -1,4 +1,4 @@
-import './vendor/highlight.pack.js'
+import * as hljs from 'highlight.js'
 import * as FontFaceObserver from 'fontfaceobserver'
 import * as Blazy from 'blazy'
 import ImagesLoaded from 'imagesloaded'
@@ -26,7 +26,7 @@ dinNextThinObserver.load().then(() => {
   console.log('DIN Next - Thin is not available');
 });
 
-(<any>window).hljs.initHighlightingOnLoad();
+hljs.initHighlightingOnLoad();
 
 new Blazy();
 
