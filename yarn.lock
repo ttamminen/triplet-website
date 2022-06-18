@@ -2749,13 +2749,6 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-app@ttamminen/Ghost-App:
-  version "0.0.3"
-  resolved "https://codeload.github.com/ttamminen/Ghost-App/tar.gz/003d79f6874c45842cffff9cd64b94555c66cb5a"
-  dependencies:
-    lodash "2.4.1"
-    when "~2.5.1"
-
 ghost-gql@0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.6.tgz#be811bc95f8f72671009c33100fc85d2d02758ee"
@@ -4339,10 +4332,6 @@ lodash.templatesettings@^3.0.0:
 lodash.unescape@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/lodash.unescape/-/lodash.unescape-4.0.1.tgz#bf2249886ce514cda112fae9218cdc065211fc9c"
-
-lodash@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-2.4.1.tgz#5b7723034dda4d262e5a46fb2c58d7cc22f71420"
 
 lodash@3.10.1:
   version "3.10.1"
@@ -7023,10 +7012,6 @@ websocket-driver@>=0.3.6:
 websocket-extensions@>=0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.1.tgz#76899499c184b6ef754377c2dbb0cd6cb55d29e7"
-
-when@~2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/when/-/when-2.5.1.tgz#1109685075dc09643109287e6363ae5d73ea7d53"
 
 whet.extend@~0.9.9:
   version "0.9.9"
